@@ -1,0 +1,40 @@
+role
+
+id long pk not null autoincrement,
+nome text not null tamanho(200);
+
+enums_role:
+
+"admin",
+"proprietário",
+"supervisor",
+"vendedor";
+
+pessoa
+
+id long pk not null autoincrement,
+nome text not null tamanho(200),
+email text not null tamanho(200),
+telefone text not null tamanho(14),
+data_nascimento date null,
+dt_ultima_atualizacao date not null default(now());
+
+usuario
+
+id long pk-fk com a tabela de pessoa, no campo id, not null autoincrement,
+login text not null tamanho(200),
+senha text not null tamanho(15),
+id_role long not null referenciando a tabela role, no campo id,
+fl_ativo boolean default(true);
+
+
+
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
+id long pk not null autoincrement,
