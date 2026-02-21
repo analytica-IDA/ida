@@ -12,6 +12,7 @@ namespace backend.Services
     {
         string GenerateToken(Usuario usuario);
         bool ValidatePassword(string inputSenha, string storedSenha);
+        string HashPassword(string senha);
     }
 
     public class AuthService : IAuthService
@@ -47,6 +48,12 @@ namespace backend.Services
             // Simple check as requested (admin/admin). 
             // In a real app, use hashing (BCrypt/identity).
             return inputSenha == storedSenha;
+        }
+
+        public string HashPassword(string senha)
+        {
+            // Simple return for now to match ValidatePassword logic
+            return senha;
         }
     }
 }

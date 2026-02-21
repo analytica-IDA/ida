@@ -160,6 +160,10 @@ namespace backend.Data
                 entity.HasOne(d => d.Usuario)
                     .WithMany(p => p.ClientesUsuarios)
                     .HasForeignKey(d => d.IdUsuario);
+
+                entity.HasOne(d => d.Area)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdArea);
             });
         }
     }

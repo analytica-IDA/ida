@@ -3,6 +3,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import UsersPage from './pages/UsersPage';
+import PessoasPage from './pages/PessoasPage';
+import ClientesPage from './pages/ClientesPage';
+import CargosPage from './pages/CargosPage';
+import AreasPage from './pages/AreasPage';
 import { useEffect, useState } from 'react';
 
 const queryClient = new QueryClient();
@@ -40,6 +44,10 @@ function App() {
           >
             <Route index element={<Navigate to="/users" replace />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="pessoas" element={<PessoasPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+            <Route path="cargos" element={<CargosPage />} />
+            <Route path="areas" element={<AreasPage />} />
             <Route path="dashboard" element={<div>Dashboard Placeholder</div>} />
             <Route path="notifications" element={<div>Notifications Placeholder</div>} />
             <Route path="settings" element={<div>Settings Placeholder</div>} />

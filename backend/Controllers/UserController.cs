@@ -50,6 +50,71 @@ namespace backend.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _context.Usuarios
+                .Include(u => u.Pessoa)
+                .Include(u => u.Cargo)
+                .ThenInclude(c => c!.Role)
+                .Include(u => u.Area)
+                .Select(u => new 
+                {
+                    u.Id,
+                    Nome = u.Pessoa!.Nome,
+                    u.Login,
+                    Email = u.Pessoa!.Email,
+                    Cargo = u.Cargo!.Nome,
+                    RoleDescription = u.Cargo!.Role!.Nome,
+                    Area = u.Area!.Nome,
+                    u.FlAtivo,
+                    u.DtUltimaAtualizacao
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        [Authorize]
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _context.Roles.ToListAsync();
+            return Ok(roles);
+        }
+
+        [Authorize]
+        [HttpGet("cargos")]
+        public async Task<IActionResult> GetCargos()
+        {
+            var cargos = await _context.Cargos.ToListAsync();
+            return Ok(cargos);
+        }
+
+        [Authorize]
+        [HttpGet("areas")]
+        public async Task<IActionResult> GetAreas()
+        {
+            var areas = await _context.Areas.ToListAsync();
+            return Ok(areas);
+        }
+
+        [Authorize]
+        [HttpGet("menu")]
+        public async Task<IActionResult> GetMenu()
+        {
+            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
+            
+            var apps = await _context.RolesAplicacoes
+                .Where(ra => ra.IdRole == roleId)
+                .Include(ra => ra.Aplicacao)
+                .Select(ra => ra.Aplicacao!.Nome)
+                .ToListAsync();
+
+            return Ok(apps);
+        }
+
+        [Authorize]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -62,39 +127,62 @@ namespace backend.Controllers
             if (currentUser == null) return Unauthorized();
 
             var currentUserRole = currentUser.Cargo?.Role?.Nome;
-            var targetRole = await _context.Roles.FindAsync(request.IdRoleParaNovoUsuario);
+            
+            // For simplicity, we are getting a CargoId directly from frontend in this refined version
+            var targetCargo = await _context.Cargos
+                .Include(c => c.Role)
+                .FirstOrDefaultAsync(c => c.Id == request.IdCargo);
 
-            if (targetRole == null) return BadRequest("Role alvo inválida");
+            if (targetCargo == null) return BadRequest("Cargo alvo inválido");
+
+            var targetRoleName = targetCargo.Role?.Nome;
 
             // Role constraints
             bool canCreate = false;
             if (currentUserRole == "admin") canCreate = true;
-            else if (currentUserRole == "proprietário" && (targetRole.Nome == "supervisor" || targetRole.Nome == "vendedor")) canCreate = true;
-            else if (currentUserRole == "supervisor" && targetRole.Nome == "vendedor") canCreate = true;
+            else if (currentUserRole == "proprietário" && (targetRoleName == "supervisor" || targetRoleName == "vendedor")) canCreate = true;
+            else if (currentUserRole == "supervisor" && targetRoleName == "vendedor") canCreate = true;
 
-            if (!canCreate) return Forbid("Você não tem permissão para criar usuários deste tipo");
+            if (!canCreate) return Forbid();
 
-            // Logic to create Pessoa and Usuario (omitted for brevity, but follows the pattern)
-            // ... Implement creation here ...
-
-            await _auditService.LogAction(currentUser.Login, "REGISTER_USER", "usuario", "", $"Usuário {request.Login} criado");
-
-            // Notify higher roles if a seller is created
-            if (targetRole.Nome == "vendedor")
+            // Check if login already exists
+            if (await _context.Usuarios.AnyAsync(u => u.Login == request.Login))
             {
-                var supervisors = await _context.Usuarios
-                    .Include(u => u.Cargo)
-                    .ThenInclude(c => c!.Role)
-                    .Where(u => u.Cargo!.Role!.Nome == "supervisor" || u.Cargo!.Role!.Nome == "proprietário" || u.Cargo!.Role!.Nome == "admin")
-                    .ToListAsync();
-
-                foreach (var sup in supervisors)
-                {
-                    await _notificationService.CreateNotification(sup.Id, "Novo Vendedor", $"Um novo vendedor ({request.Login}) foi cadastrado por {currentUser.Login}", "AtividadeVendedor");
-                }
+                return BadRequest(new { message = "Este login já está em uso" });
             }
 
-            return Ok(new { message = "Usuário registrado com sucesso" });
+            // Check if Pessoa exists
+            var pessoaExists = await _context.Pessoas.AnyAsync(p => p.Id == request.IdPessoa);
+            if (!pessoaExists) return NotFound(new { message = "Pessoa não encontrada" });
+
+            // Check if Usuario already exists for this Pessoa
+            var userExists = await _context.Usuarios.AnyAsync(u => u.Id == request.IdPessoa);
+            if (userExists) return BadRequest(new { message = "Esta pessoa já possui um usuário vinculado" });
+
+            try
+            {
+                var usuario = new Usuario
+                {
+                    Id = request.IdPessoa,
+                    Login = request.Login,
+                    Senha = _authService.HashPassword(request.Senha),
+                    IdCargo = request.IdCargo,
+                    IdArea = request.IdArea,
+                    FlAtivo = true,
+                    DtUltimaAtualizacao = DateTime.Now
+                };
+
+                _context.Usuarios.Add(usuario);
+                await _context.SaveChangesAsync();
+
+                await _auditService.LogAction(currentUser.Login, "REGISTER_USER", "usuario", usuario.Id.ToString(), $"Usuário {request.Login} criado e vinculado à pessoa {request.IdPessoa}");
+
+                return Ok(new { message = "Usuário registrado com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao criar usuário", error = ex.Message });
+            }
         }
 
         [HttpPost("forgot-password")]
@@ -122,6 +210,13 @@ namespace backend.Controllers
     }
 
     public class LoginRequest { public string Login { get; set; } = ""; public string Senha { get; set; } = ""; }
-    public class RegisterRequest { public string Login { get; set; } = ""; public string Senha { get; set; } = ""; public long IdRoleParaNovoUsuario { get; set; } }
+    public class RegisterRequest 
+    { 
+        public long IdPessoa { get; set; }
+        public string Login { get; set; } = ""; 
+        public string Senha { get; set; } = ""; 
+        public long IdCargo { get; set; } 
+        public long IdArea { get; set; }
+    }
     public class ForgotPasswordRequest { public string Login { get; set; } = ""; }
 }

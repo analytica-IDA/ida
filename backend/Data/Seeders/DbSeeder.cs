@@ -25,27 +25,44 @@ namespace backend.Data.Seeders
             }
 
             // 2. Seed Aplicacoes
-            if (!context.Aplicacoes.Any())
+            if (context.Aplicacoes.Count() <= 4) // Assuming initial seed had 4
             {
-                context.Aplicacoes.AddRange(new List<Aplicacao>
+                var currentApps = context.Aplicacoes.Select(a => a.Nome).ToList();
+                var newApps = new List<string> 
+                { 
+                    "Gerenciamento de Pessoas", 
+                    "Gerenciamento de Clientes", 
+                    "Gerenciamento de Cargos", 
+                    "Gerenciamento de Áreas" 
+                };
+
+                foreach (var appName in newApps)
                 {
-                    new Aplicacao { Nome = "Gestão de Usuários" },
-                    new Aplicacao { Nome = "Relatórios" },
-                    new Aplicacao { Nome = "Dashboard" },
-                    new Aplicacao { Nome = "Configurações" }
-                });
+                    if (!currentApps.Contains(appName))
+                    {
+                        context.Aplicacoes.Add(new Aplicacao { Nome = appName });
+                    }
+                }
                 context.SaveChanges();
             }
 
 
             // 3. Link All Applications to Admin Role
             var adminRole = context.Roles.FirstOrDefault(r => r.Nome == "admin");
-            if (adminRole != null && !context.RolesAplicacoes.Any(ra => ra.IdRole == adminRole.Id))
+            if (adminRole != null)
             {
                 var apps = context.Aplicacoes.ToList();
+                var existingLinks = context.RolesAplicacoes
+                    .Where(ra => ra.IdRole == adminRole.Id)
+                    .Select(ra => ra.IdAplicacao)
+                    .ToList();
+
                 foreach (var app in apps)
                 {
-                    context.RolesAplicacoes.Add(new RoleAplicacao { IdRole = adminRole.Id, IdAplicacao = app.Id });
+                    if (!existingLinks.Contains(app.Id))
+                    {
+                        context.RolesAplicacoes.Add(new RoleAplicacao { IdRole = adminRole.Id, IdAplicacao = app.Id });
+                    }
                 }
                 context.SaveChanges();
             }

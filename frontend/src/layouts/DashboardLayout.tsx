@@ -1,9 +1,11 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft, UserCircle, Briefcase, MapPin, Building2, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,10 +16,40 @@ interface LayoutProps {
   theme: string;
 }
 
+const iconMap: Record<string, any> = {
+  "Dashboard": <LayoutDashboard size={20} />,
+  "Gestão de Usuários": <Users size={20} />,
+  "Relatórios": <BarChart3 size={20} />,
+  "Configurações": <Settings size={20} />,
+  "Gerenciamento de Pessoas": <UserCircle size={20} />,
+  "Gerenciamento de Clientes": <Building2 size={20} />,
+  "Gerenciamento de Cargos": <Briefcase size={20} />,
+  "Gerenciamento de Áreas": <MapPin size={20} />,
+};
+
+const routeMap: Record<string, string> = {
+  "Dashboard": "/dashboard",
+  "Gestão de Usuários": "/users",
+  "Relatórios": "/reports",
+  "Configurações": "/settings",
+  "Gerenciamento de Pessoas": "/pessoas",
+  "Gerenciamento de Clientes": "/clientes",
+  "Gerenciamento de Cargos": "/cargos",
+  "Gerenciamento de Áreas": "/areas",
+};
+
 export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { data: menuItems, isLoading } = useQuery<string[]>({
+    queryKey: ['menu'],
+    queryFn: async () => {
+      const { data } = await api.get('/user/menu');
+      return data;
+    },
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -60,34 +92,21 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
         </div>
 
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
-          <SidebarItem 
-            icon={<LayoutDashboard size={20} />} 
-            label="Dashboard" 
-            to="/dashboard" 
-            isOpen={isSidebarOpen} 
-            active={location.pathname === '/dashboard'}
-          />
-          <SidebarItem 
-            icon={<Users size={20} />} 
-            label="Usuários" 
-            to="/users" 
-            isOpen={isSidebarOpen} 
-            active={location.pathname === '/users'}
-          />
-          <SidebarItem 
-            icon={<Bell size={20} />} 
-            label="Notificações" 
-            to="/notifications" 
-            isOpen={isSidebarOpen} 
-            active={location.pathname === '/notifications'}
-          />
-          <SidebarItem 
-            icon={<Settings size={20} />} 
-            label="Configurações" 
-            to="/settings" 
-            isOpen={isSidebarOpen} 
-            active={location.pathname === '/settings'}
-          />
+          {!isLoading && menuItems?.map(appName => (
+            <SidebarItem 
+              key={appName}
+              icon={iconMap[appName] || <LayoutDashboard size={20} />} 
+              label={appName} 
+              to={routeMap[appName] || "/"} 
+              isOpen={isSidebarOpen} 
+              active={location.pathname === routeMap[appName]}
+            />
+          ))}
+          {isLoading && (
+            <div className="flex justify-center py-10">
+              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
         </nav>
 
         <div className="p-4 space-y-3 bg-neutral-50/50 dark:bg-neutral-800/20 border-t border-neutral-100 dark:border-neutral-800">
