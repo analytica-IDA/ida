@@ -21,6 +21,7 @@ export default function CargosPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCargo, setEditingCargo] = useState<Cargo | null>(null);
+  const [isQuickRoleOpen, setQuickRoleOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: cargos, isLoading } = useQuery<Cargo[]>({
@@ -139,18 +140,24 @@ export default function CargosPage() {
             onClose={() => setModalOpen(false)} 
             roles={roles || []}
             cargo={editingCargo}
+            onQuickRole={() => setQuickRoleOpen(true)}
           />
+        )}
+        {isQuickRoleOpen && (
+          <QuickRoleModal onClose={() => setQuickRoleOpen(false)} />
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-function CargoModal({ onClose, roles, cargo }: { onClose: () => void; roles: Role[]; cargo: Cargo | null }) {
+function CargoModal({ onClose, roles, cargo, onQuickRole }: { onClose: () => void; roles: Role[]; cargo: Cargo | null; onQuickRole: () => void }) {
   const [formData, setFormData] = useState({
     nome: cargo?.nome || '',
     idRole: cargo?.idRole || roles[0]?.id || 0
   });
+
+  const [isQuickRoleOpen, setQuickRoleOpen] = useState(false);
   
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -196,19 +203,29 @@ function CargoModal({ onClose, roles, cargo }: { onClose: () => void; roles: Rol
 
             <div>
               <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Nível de Acesso (Role)</label>
-              <div className="relative">
-                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                <select 
-                  required
-                  value={formData.idRole}
-                  onChange={(e) => setFormData({ ...formData, idRole: Number(e.target.value) })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none appearance-none"
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                  <select 
+                    required
+                    value={formData.idRole}
+                    onChange={(e) => setFormData({ ...formData, idRole: Number(e.target.value) })}
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none appearance-none"
+                  >
+                    <option value="">Selecione um nível...</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <button 
+                  type="button"
+                  onClick={onQuickRole}
+                  className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                  title="Criar Novo Nível"
                 >
-                  <option value="">Selecione um nível...</option>
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>{role.nome}</option>
-                  ))}
-                </select>
+                  <Plus size={20} />
+                </button>
               </div>
             </div>
           </div>
@@ -230,6 +247,43 @@ function CargoModal({ onClose, roles, cargo }: { onClose: () => void; roles: Rol
             </button>
           </div>
         </form>
+
+        <AnimatePresence>
+          {isQuickRoleOpen && (
+            <QuickRoleModal onClose={() => setQuickRoleOpen(false)} />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+}
+
+function QuickRoleModal({ onClose }: { onClose: () => void }) {
+  const [nome, setNome] = useState('');
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (data: any) => api.post('/role', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      onClose();
+    }
+  });
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white dark:bg-neutral-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-neutral-800">
+        <h4 className="text-xl font-bold mb-6">Novo Nível de Acesso</h4>
+        <div className="space-y-4">
+          <input 
+            type="text" placeholder="Nome do nível (ex: gerente)" value={nome} onChange={e => setNome(e.target.value)}
+            className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
+          />
+          <div className="flex gap-2 pt-2">
+            <button onClick={onClose} className="flex-1 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl font-bold">Cancelar</button>
+            <button onClick={() => mutation.mutate({ nome })} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Criar</button>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

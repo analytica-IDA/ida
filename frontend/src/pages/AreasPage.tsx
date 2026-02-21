@@ -1,4 +1,4 @@
-import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Building } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ export default function AreasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingArea, setEditingArea] = useState<Area | null>(null);
+  const [isQuickClienteOpen, setQuickClienteOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: areas, isLoading } = useQuery<Area[]>({
@@ -118,14 +119,18 @@ export default function AreasPage() {
           <AreaModal 
             onClose={() => setModalOpen(false)} 
             area={editingArea}
+            onQuickCliente={() => setQuickClienteOpen(true)}
           />
+        )}
+        {isQuickClienteOpen && (
+          <QuickClienteModal onClose={() => setQuickClienteOpen(false)} />
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-function AreaModal({ onClose, area }: { onClose: () => void; area: Area | null }) {
+function AreaModal({ onClose, area, onQuickCliente }: { onClose: () => void; area: Area | null; onQuickCliente: () => void }) {
   const [formData, setFormData] = useState({
     nome: area?.nome || ''
   });
@@ -158,13 +163,34 @@ function AreaModal({ onClose, area }: { onClose: () => void; area: Area | null }
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(formData); }} className="p-8 space-y-6">
           <div className="space-y-4">
             <div>
+              <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Empresa / Cliente</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                  <select 
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none appearance-none font-bold"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Selecione um cliente...</option>
+                    <option value="1">Analytica IDA</option>
+                  </select>
+                </div>
+                <button 
+                  type="button"
+                  onClick={onQuickCliente}
+                  className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Nome da Área</label>
               <div className="relative">
-                <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
                 <input 
-                  type="text" 
-                  required
-                  autoFocus
+                  type="text" required autoFocus
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                   placeholder="Ex: Comercial, RH, TI"
@@ -191,6 +217,37 @@ function AreaModal({ onClose, area }: { onClose: () => void; area: Area | null }
             </button>
           </div>
         </form>
+      </motion.div>
+    </div>
+  );
+}
+
+function QuickClienteModal({ onClose }: { onClose: () => void }) {
+  const [nome, setNome] = useState('');
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (data: any) => api.post('/cliente', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      onClose();
+    }
+  });
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white dark:bg-neutral-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-neutral-800">
+        <h4 className="text-xl font-bold mb-6">Novo Cliente</h4>
+        <div className="space-y-4">
+          <input 
+            type="text" placeholder="Razão social / Nome" value={nome} onChange={e => setNome(e.target.value)}
+            className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
+          />
+          <div className="flex gap-2 pt-2">
+            <button onClick={onClose} className="flex-1 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl font-bold">Cancelar</button>
+            <button onClick={() => mutation.mutate({ nome })} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Criar</button>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
