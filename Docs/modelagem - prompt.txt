@@ -1,7 +1,12 @@
+Você é um Arquiteto de Software Sênior com 20 anos de experiência em desenvolvimento de software, especializado em arquitetura de software, banco de dados, desenvolvimento web e mobile.
+
+Você é responsável por criar um sistema com as seguintes funcionalidades, que ainda está em desenvolvimento:
+
 role
 
 id long pk not null autoincrement,
-nome text not null tamanho(200);
+nome text not null tamanho(200),
+dt_ultima_atualizacao date not null default(now());
 
 enums_role:
 
@@ -10,13 +15,61 @@ enums_role:
 "supervisor",
 "vendedor";
 
+aplicacao
+
+id long pk not null autoincrement,
+nome text not null tamanho(200),
+dt_ultima_atualizacao date not null default(now());
+
+- trazer na criação do banco as seguintes aplicações:
+"Cadastro de Pessoa",
+"Cadastro de Usuário",
+"Cadastro de Cliente",
+"Cadastro de Cargo",
+"Cadastro de Área";
+
+role_aplicacao
+
+id long pk not null autoincrement,
+id_role long not null referenciando a tabela role, no campo id,
+id_aplicacao long not null referenciando a tabela aplicacao, no campo id,
+dt_ultima_atualizacao date not null default(now());
+
+- Vincular todas as aplicações para o usuário admin.
+
+cliente
+
+id long pk not null autoincrement,
+nome text not null tamanho(200),
+cnpj text not null tamanho(14),
+email text not null tamanho(200),
+telefone text not null tamanho(14),
+foto bytea null,
+dt_ultima_atualizacao date not null default(now());
+
 pessoa
 
 id long pk not null autoincrement,
 nome text not null tamanho(200),
+cpf text not null tamanho(11),
 email text not null tamanho(200),
 telefone text not null tamanho(14),
+foto bytea null,
 data_nascimento date null,
+dt_ultima_atualizacao date not null default(now());
+
+cargo
+
+id long pk not null autoincrement,
+nome text not null tamanho(200),
+id_role long not null referenciando a tabela role, no campo id,
+dt_ultima_atualizacao date not null default(now());
+
+area
+
+id long pk not null autoincrement,
+nome text not null tamanho(200),
+id_cliente long not null referenciando a tabela cliente, no campo id,
 dt_ultima_atualizacao date not null default(now());
 
 usuario
@@ -24,17 +77,36 @@ usuario
 id long pk-fk com a tabela de pessoa, no campo id, not null autoincrement,
 login text not null tamanho(200),
 senha text not null tamanho(15),
-id_role long not null referenciando a tabela role, no campo id,
-fl_ativo boolean default(true);
+id_cargo long not null referenciando a tabela cargo, no campo id,
+id_area long not null referenciando a tabela area, no campo id,
+fl_ativo boolean default(true),
+dt_ultima_atualizacao date not null default(now());
 
+cliente_usuario
 
+id long pk not null autoincrement,
+id_cliente long not null referenciando a tabela cliente, no campo id,
+id_usuario long not null referenciando a tabela usuario, no campo id,
+dt_ultima_atualizacao date not null default(now());
 
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
-id long pk not null autoincrement,
+- Na criação do banco deverá criar um usuário com o login admin e senha admin, e id_role = 1.
+- Se o usuário que estiver cadastrando um novo usuário for do tipo admin, ele poderá cadastrar qualquer tipo de usuário.
+- Se o usuário que estiver cadastrando um novo usuário for do tipo proprietário, ele poderá cadastrar somente os tipos supervisor e vendedor.
+- Se o usuário que estiver cadastrando um novo usuário for do tipo supervisor, ele poderá cadastrar somente o tipo vendedor.
+- O usuário do tipo vendedor não poderá cadastrar nenhum tipo de usuário.
+- O schema no banco de dados deverá ser criado com o nome ida.
+- O sistema deverá ser desenvolvido em português do Brasil.
+- O sistema deverá ter um tema escuro ou claro, de acordo com a preferência do usuário.
+- O sistema deverá ser responsivo, Desktop, Tablet e Mobile.
+- O sistema deverá ter todos os controles necessários para o gerenciamento de usuários e suas permissões, como fluxo para "esqueci a minha senha", etc.
+- O sistema deverá ter um sistema de logs para registrar todas as ações dos usuários.
+- O sistema deverá ter um sistema de auditoria para registrar todas as ações dos usuários.
+- O sistema deverá ter um sistema de backup.
+- O sistema deverá ter um sistema de notificação para alertar sobre eventos importantes e atividades dos vendedores para as roles superiores.
+- A notificação a princípio será dentro do sistema, alertando aos supervisores sobre atividades dos vendedores (caso falte algo na modelagem do banco para cobrir isso, pode implementar).
+
+Tecnologias:
+- React + Vite + TypeScript (Frontend) *a porta local não pode ser 5173, já tenho projetos nessa porta;
+- Padrão de design em Tailwind CSS;
+- C# (Backend) *não pode ser na porta 5000, já tenho projetos nessa porta, com Entity Framework Core;
+- PostgreSQL (Banco de dados) *no Docker, e não podem ser nas portas 5432 e 5433, já tenho projetos nessas portas;

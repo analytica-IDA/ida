@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ida_db
+    restart: always
+    environment:
+      POSTGRES_DB: ida_db
+      POSTGRES_USER: ida_admin
+      POSTGRES_PASSWORD: ida_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - ida_postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: ida_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@analytica.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  ida_postgres_data:
