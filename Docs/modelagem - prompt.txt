@@ -22,11 +22,14 @@ nome text not null tamanho(200),
 dt_ultima_atualizacao date not null default(now());
 
 - trazer na criação do banco as seguintes aplicações:
-"Cadastro de Pessoa",
-"Cadastro de Usuário",
-"Cadastro de Cliente",
-"Cadastro de Cargo",
-"Cadastro de Área";
+"Gerenciamento de Pessoa",
+"Gerenciamento de Usuário",
+"Gerenciamento de Cliente",
+"Gerenciamento de Cargo",
+"Gerenciamento de Área";
+"Dashboard";
+"Relatórios";
+"Configurações";
 
 role_aplicacao
 

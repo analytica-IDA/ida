@@ -33,6 +33,7 @@ namespace backend.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _context.Usuarios
+                .Include(u => u.Pessoa)
                 .Include(u => u.Cargo)
                 .ThenInclude(c => c!.Role)
                 .FirstOrDefaultAsync(u => u.Login == request.Login);
@@ -53,11 +54,36 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _context.Usuarios
+            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
+            var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+
+            var query = _context.Usuarios
                 .Include(u => u.Pessoa)
                 .Include(u => u.Cargo)
                 .ThenInclude(c => c!.Role)
                 .Include(u => u.Area)
+                .AsQueryable();
+
+            if (roleId != 1)
+            {
+                query = query.Where(u => u.Pessoa!.IdCliente == idCliente);
+
+                if (roleId == 2) // Proprietário: vê supervisores e vendedores
+                {
+                    query = query.Where(u => u.Cargo!.Role!.Nome == "supervisor" || u.Cargo!.Role!.Nome == "Supervisor"
+                                         || u.Cargo!.Role!.Nome == "vendedor" || u.Cargo!.Role!.Nome == "Vendedor");
+                }
+                else if (roleId == 3) // Supervisor: vê apenas vendedores
+                {
+                    query = query.Where(u => u.Cargo!.Role!.Nome == "vendedor" || u.Cargo!.Role!.Nome == "Vendedor");
+                }
+                else // Vendedor ou outro: não vê nenhum usuário
+                {
+                    query = query.Where(u => false);
+                }
+            }
+
+            var users = await query
                 .Select(u => new 
                 {
                     u.Id,
@@ -87,7 +113,17 @@ namespace backend.Controllers
         [HttpGet("cargos")]
         public async Task<IActionResult> GetCargos()
         {
-            var cargos = await _context.Cargos.ToListAsync();
+            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
+            var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+
+            var query = _context.Cargos.Include(c => c.ClientesCargos).AsQueryable();
+
+            if (roleId != 1)
+            {
+                query = query.Where(c => c.ClientesCargos.Any(cc => cc.IdCliente == idCliente));
+            }
+
+            var cargos = await query.ToListAsync();
             return Ok(cargos);
         }
 
@@ -95,7 +131,17 @@ namespace backend.Controllers
         [HttpGet("areas")]
         public async Task<IActionResult> GetAreas()
         {
-            var areas = await _context.Areas.ToListAsync();
+            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
+            var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+
+            var query = _context.Areas.Include(a => a.CargosAreas).ThenInclude(ca => ca.Cargo).AsQueryable();
+
+            if (roleId != 1)
+            {
+                query = query.Where(a => a.CargosAreas.Any(ca => ca.Cargo != null && ca.Cargo.ClientesCargos.Any(cc => cc.IdCliente == idCliente)));
+            }
+
+            var areas = await query.ToListAsync();
             return Ok(areas);
         }
 
@@ -197,6 +243,58 @@ namespace backend.Controllers
         }
 
         [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            var userId = long.Parse(User.FindFirst("id")?.Value ?? "0");
+            var user = await _context.Usuarios
+                .Include(u => u.Pessoa)
+                .Include(u => u.Cargo)
+                .ThenInclude(c => c!.Role)
+                .Include(u => u.Cargo!)
+                .ThenInclude(c => c.ClientesCargos)
+                .Include(u => u.Area)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return NotFound("Usuário não encontrado");
+
+            return Ok(new
+            {
+                user.Login,
+                Nome = user.Pessoa?.Nome,
+                Cpf = user.Pessoa?.Cpf,
+                Email = user.Pessoa?.Email,
+                Cargo = user.Cargo?.Nome,
+                Area = user.Area?.Nome,
+                Role = user.Cargo?.Role?.Nome,
+                IdCliente = user.Pessoa?.IdCliente
+            });
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var userId = long.Parse(User.FindFirst("id")?.Value ?? "0");
+            var user = await _context.Usuarios.FindAsync(userId);
+
+            if (user == null) return NotFound("Usuário não encontrado");
+
+            if (!_authService.ValidatePassword(request.SenhaAtual, user.Senha))
+            {
+                return BadRequest(new { message = "Senha atual incorreta" });
+            }
+
+            user.Senha = _authService.HashPassword(request.NovaSenha);
+            user.DtUltimaAtualizacao = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            await _auditService.LogAction(user.Login, "CHANGE_PASSWORD", "usuario", user.Id.ToString(), "Senha alterada com sucesso");
+
+            return Ok(new { message = "Senha alterada com sucesso" });
+        }
+
+        [Authorize]
         [HttpPost("backup")]
         public IActionResult Backup()
         {
@@ -219,4 +317,9 @@ namespace backend.Controllers
         public long IdArea { get; set; }
     }
     public class ForgotPasswordRequest { public string Login { get; set; } = ""; }
+    public class ChangePasswordRequest
+    {
+        public string SenhaAtual { get; set; } = string.Empty;
+        public string NovaSenha { get; set; } = string.Empty;
+    }
 }

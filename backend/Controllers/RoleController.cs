@@ -29,7 +29,7 @@ namespace backend.Controllers
         public async Task<IActionResult> Create([FromBody] Role role)
         {
             _context.Roles.Add(role);
-            await _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(role);
         }
     }

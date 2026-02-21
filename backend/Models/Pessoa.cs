@@ -11,7 +11,10 @@ namespace backend.Models
         public byte[]? Foto { get; set; }
         public DateTime? DataNascimento { get; set; }
 
+        public long? IdCliente { get; set; }
+
         // Navigation property
+        public Cliente? Cliente { get; set; }
         public Usuario? Usuario { get; set; }
     }
 }

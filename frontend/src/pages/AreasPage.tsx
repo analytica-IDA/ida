@@ -1,4 +1,4 @@
-import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Building2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,14 +7,31 @@ import api from '../services/api';
 interface Area {
   id: number;
   nome: string;
+  idCargo?: number;
 }
 
 export default function AreasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingArea, setEditingArea] = useState<Area | null>(null);
-  const [isQuickClienteOpen, setQuickClienteOpen] = useState(false);
+  const [isQuickCargoOpen, setQuickCargoOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const { data: userProfile } = useQuery<any>({
+    queryKey: ['user-me'],
+    queryFn: async () => {
+      const { data } = await api.get('/user/me');
+      return data;
+    },
+  });
+
+  const { data: cargos } = useQuery<any[]>({
+    queryKey: ['cargos'],
+    queryFn: async () => {
+      const { data } = await api.get('/cargo');
+      return data;
+    },
+  });
 
   const { data: areas, isLoading } = useQuery<Area[]>({
     queryKey: ['areas'],
@@ -66,7 +83,7 @@ export default function AreasPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
-              <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">ID</th>
+              <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">Código</th>
               <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">Nome da Área</th>
               <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300 text-right">Ações</th>
             </tr>
@@ -86,14 +103,14 @@ export default function AreasPage() {
                 <td className="px-6 py-4 text-neutral-500">#{area.id}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
                       <MapPin size={16} />
                     </div>
                     <span className="font-medium">{area.nome}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-2 transition-opacity">
                     <button 
                       onClick={() => { setEditingArea(area); setModalOpen(true); }}
                       className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-neutral-500 hover:text-blue-600 transition-colors shadow-sm"
@@ -119,30 +136,46 @@ export default function AreasPage() {
           <AreaModal 
             onClose={() => setModalOpen(false)} 
             area={editingArea}
-            onQuickCliente={() => setQuickClienteOpen(true)}
+            cargos={cargos || []}
+            userProfile={userProfile}
+            onQuickCargo={() => setQuickCargoOpen(true)}
           />
         )}
-        {isQuickClienteOpen && (
-          <QuickClienteModal onClose={() => setQuickClienteOpen(false)} />
+        {isQuickCargoOpen && (
+          <QuickCargoModal onClose={() => setQuickCargoOpen(false)} />
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-function AreaModal({ onClose, area, onQuickCliente }: { onClose: () => void; area: Area | null; onQuickCliente: () => void }) {
+function AreaModal({ onClose, area, cargos, userProfile, onQuickCargo }: { onClose: () => void; area: Area | null; cargos: any[]; userProfile: any; onQuickCargo: () => void }) {
+  const filteredCargos = cargos.filter(cargo => {
+    const userRole = userProfile?.role?.toLowerCase();
+    const roleName = cargo.role?.nome?.toLowerCase() || '';
+    
+    if (userRole === 'admin') return true;
+    if (userRole === 'proprietário') return roleName === 'supervisor' || roleName === 'vendedor';
+    if (userRole === 'supervisor') return roleName === 'vendedor';
+    return false;
+  });
+
   const [formData, setFormData] = useState({
-    nome: area?.nome || ''
+    nome: area?.nome || '',
+    idCargo: area?.idCargo || ''
   });
   
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (data: typeof formData) => 
+    mutationFn: (data: any) => 
       area ? api.put(`/area/${area.id}`, { ...data, id: area.id }) : api.post('/area', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] });
       onClose();
     },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Erro ao salvar a área. Verifique os dados fornecidos.');
+    }
   });
 
   return (
@@ -160,25 +193,36 @@ function AreaModal({ onClose, area, onQuickCliente }: { onClose: () => void; are
           </button>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(formData); }} className="p-8 space-y-6">
+        <form onSubmit={(e) => { 
+          e.preventDefault(); 
+          const payload = {
+            ...formData,
+            idCargo: formData.idCargo ? Number(formData.idCargo) : null
+          };
+          mutation.mutate(payload); 
+        }} className="p-8 space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Empresa / Cliente</label>
+              <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Cargo Vinculado</label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
                   <select 
-                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none appearance-none font-bold"
-                    defaultValue=""
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none appearance-none font-medium"
+                    value={formData.idCargo}
+                    onChange={(e) => setFormData({ ...formData, idCargo: e.target.value })}
                   >
-                    <option value="" disabled>Selecione um cliente...</option>
-                    <option value="1">Analytica IDA</option>
+                    <option value="" disabled>Selecione um cargo...</option>
+                    {filteredCargos.map((cargo: any) => (
+                      <option key={cargo.id} value={cargo.id}>{cargo.nome}</option>
+                    ))}
                   </select>
                 </div>
                 <button 
                   type="button"
-                  onClick={onQuickCliente}
+                  onClick={onQuickCargo}
                   className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                  title="Criar Novo Cargo"
                 >
                   <Plus size={20} />
                 </button>
@@ -222,14 +266,14 @@ function AreaModal({ onClose, area, onQuickCliente }: { onClose: () => void; are
   );
 }
 
-function QuickClienteModal({ onClose }: { onClose: () => void }) {
+function QuickCargoModal({ onClose }: { onClose: () => void }) {
   const [nome, setNome] = useState('');
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: any) => api.post('/cliente', data),
+    mutationFn: (data: any) => api.post('/cargo', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      queryClient.invalidateQueries({ queryKey: ['cargos'] });
       onClose();
     }
   });
@@ -237,15 +281,15 @@ function QuickClienteModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white dark:bg-neutral-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-neutral-800">
-        <h4 className="text-xl font-bold mb-6">Novo Cliente</h4>
+        <h4 className="text-xl font-bold mb-6">Novo Cargo Rápido</h4>
         <div className="space-y-4">
           <input 
-            type="text" placeholder="Razão social / Nome" value={nome} onChange={e => setNome(e.target.value)}
+            type="text" placeholder="Nome do cargo" value={nome} onChange={e => setNome(e.target.value)}
             className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
           />
           <div className="flex gap-2 pt-2">
             <button onClick={onClose} className="flex-1 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl font-bold">Cancelar</button>
-            <button onClick={() => mutation.mutate({ nome })} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Criar</button>
+            <button onClick={() => mutation.mutate({ nome, idRole: 1 })} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Criar</button>
           </div>
         </div>
       </motion.div>

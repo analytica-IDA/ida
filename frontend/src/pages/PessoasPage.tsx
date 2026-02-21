@@ -1,8 +1,9 @@
-import { Plus, Search, Edit2, Trash2, UserCircle, Loader2, X, Mail, Phone, CreditCard } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, UserCircle, Loader2, X, Mail, Phone, CreditCard, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import { maskCPF, maskPhone, unmask } from '../utils/maskUtils';
 
 interface Pessoa {
   id: number;
@@ -17,6 +18,22 @@ export default function PessoasPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingPessoa, setEditingPessoa] = useState<Pessoa | null>(null);
   const queryClient = useQueryClient();
+
+  const { data: userProfile } = useQuery<any>({
+    queryKey: ['user-me'],
+    queryFn: async () => {
+      const { data } = await api.get('/user/me');
+      return data;
+    },
+  });
+
+  const { data: clientes } = useQuery<any[]>({
+    queryKey: ['clientes'],
+    queryFn: async () => {
+      const { data } = await api.get('/cliente');
+      return data;
+    },
+  });
 
   const { data: pessoas, isLoading } = useQuery<Pessoa[]>({
     queryKey: ['pessoas'],
@@ -70,6 +87,7 @@ export default function PessoasPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
+              <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Código</th>
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Pessoa</th>
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">CPF</th>
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Contato</th>
@@ -88,9 +106,10 @@ export default function PessoasPage() {
               </tr>
             ) : filteredPessoas?.map((pessoa) => (
               <tr key={pessoa.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group">
+                <td className="px-6 py-4 text-sm text-neutral-500">#{pessoa.id}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 border border-blue-200 dark:border-blue-800/50">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 border border-neutral-200 dark:border-neutral-800/50">
                       <UserCircle size={24} />
                     </div>
                     <div>
@@ -100,13 +119,13 @@ export default function PessoasPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  {pessoa.cpf || 'Não informado'}
+                  {pessoa.cpf ? maskCPF(pessoa.cpf) : 'Não informado'}
                 </td>
                 <td className="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-400">
-                  {pessoa.telefone || 'Sem telefone'}
+                  {pessoa.telefone ? maskPhone(pessoa.telefone) : 'Sem telefone'}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-2 transition-opacity">
                     <button 
                       onClick={() => { setEditingPessoa(pessoa); setModalOpen(true); }}
                       className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-neutral-500 hover:text-blue-600 transition-colors shadow-sm"
@@ -132,6 +151,8 @@ export default function PessoasPage() {
           <PessoaModal 
             onClose={() => setModalOpen(false)} 
             pessoa={editingPessoa}
+            userProfile={userProfile}
+            clientes={clientes || []}
           />
         )}
       </AnimatePresence>
@@ -139,22 +160,42 @@ export default function PessoasPage() {
   );
 }
 
-function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa | null }) {
+function PessoaModal({ onClose, pessoa, userProfile, clientes }: { onClose: () => void; pessoa: any | null; userProfile: any; clientes: any[] }) {
   const [formData, setFormData] = useState({
     nome: pessoa?.nome || '',
     email: pessoa?.email || '',
     cpf: pessoa?.cpf || '',
     telefone: pessoa?.telefone || '',
+    idCliente: pessoa?.idCliente?.toString() || userProfile?.idCliente?.toString() || '',
   });
-  
+
+  // Atualiza via Props caso o Contexto do usuário demore um microssegunto a mais pra ser validado
+  useEffect(() => {
+    if (!pessoa?.idCliente && userProfile?.idCliente && !formData.idCliente) {
+      setFormData(prev => ({ ...prev, idCliente: userProfile.idCliente.toString() }));
+    }
+  }, [userProfile, pessoa]);
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (data: typeof formData) => 
-      pessoa ? api.put(`/pessoa/${pessoa.id}`, { ...data, id: pessoa.id }) : api.post('/pessoa', data),
+    mutationFn: (data: typeof formData) => {
+      const payload = {
+        ...data,
+        cpf: unmask(data.cpf),
+        telefone: unmask(data.telefone),
+        idCliente: data.idCliente ? Number(data.idCliente) : null
+      };
+      return pessoa ? api.put(`/pessoa/${pessoa.id}`, { ...payload, id: pessoa.id }) : api.post('/pessoa', payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pessoas'] });
       onClose();
     },
+    onError: (error: any) => {
+      console.error('Mutation error (Pessoa):', error);
+      const msg = error.response?.data?.message || error.response?.data?.title || error.message || 'Erro desconhecido ao salvar pessoa.';
+      alert(`Falha ao salvar: ${msg}`);
+    }
   });
 
   return (
@@ -182,7 +223,7 @@ function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa 
                   type="text" required
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none font-bold"
                 />
               </div>
             </div>
@@ -195,7 +236,7 @@ function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa 
                   type="email" required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none font-bold"
                 />
               </div>
             </div>
@@ -206,9 +247,10 @@ function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa 
                 <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
                 <input 
                   type="text"
-                  value={formData.cpf}
-                  onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none"
+                  value={maskCPF(formData.cpf)}
+                  onChange={(e) => setFormData({ ...formData, cpf: unmask(e.target.value).substring(0, 11) })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none font-bold"
+                  placeholder="000.000.000-00"
                 />
               </div>
             </div>
@@ -219,12 +261,33 @@ function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa 
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
                 <input 
                   type="text"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none"
+                  value={maskPhone(formData.telefone)}
+                  onChange={(e) => setFormData({ ...formData, telefone: unmask(e.target.value).substring(0, 13) })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none font-bold"
+                  placeholder="+55 (00) 00000-0000"
                 />
               </div>
             </div>
+
+            {userProfile?.role === 'admin' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Cliente Vinculado</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                  <select 
+                    required
+                    value={formData.idCliente}
+                    onChange={(e) => setFormData({ ...formData, idCliente: e.target.value })}
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none font-bold appearance-none"
+                  >
+                    <option value="" disabled>Selecione um cliente (Obrigatório)</option>
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.id}>{c.nome}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -238,6 +301,14 @@ function PessoaModal({ onClose, pessoa }: { onClose: () => void; pessoa: Pessoa 
             <button 
               type="submit"
               disabled={mutation.isPending}
+              onClick={() => {
+                if (!formData.nome || !formData.email) {
+                   // Form contains HTML validation natively
+                }
+                if (userProfile?.role === 'admin' && !formData.idCliente) {
+                   alert("Por favor, selecione um Cliente Vinculado.");
+                }
+              }}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {mutation.isPending ? <Loader2 className="animate-spin" size={20} /> : (pessoa ? 'Salvar' : 'Cadastrar')}

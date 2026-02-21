@@ -34,7 +34,8 @@ namespace backend.Services
                 {
                     new Claim(ClaimTypes.Name, usuario.Login),
                     new Claim("id", usuario.Id.ToString()),
-                    new Claim("roleId", usuario.Cargo?.IdRole.ToString() ?? "0")
+                    new Claim("roleId", usuario.Cargo?.IdRole.ToString() ?? "0"),
+                    new Claim("idCliente", usuario.Pessoa?.IdCliente?.ToString() ?? "0")
                 }),
                 Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -45,15 +46,17 @@ namespace backend.Services
 
         public bool ValidatePassword(string inputSenha, string storedSenha)
         {
-            // Simple check as requested (admin/admin). 
-            // In a real app, use hashing (BCrypt/identity).
-            return inputSenha == storedSenha;
+            // Fallback for older plaintext passwords just in case, otherwise verify hash
+            if (!storedSenha.StartsWith("$2a$") && !storedSenha.StartsWith("$2b$") && !storedSenha.StartsWith("$2y$"))
+            {
+                return inputSenha == storedSenha;
+            }
+            return BCrypt.Net.BCrypt.Verify(inputSenha, storedSenha);
         }
 
         public string HashPassword(string senha)
         {
-            // Simple return for now to match ValidatePassword logic
-            return senha;
+            return BCrypt.Net.BCrypt.HashPassword(senha);
         }
     }
 }

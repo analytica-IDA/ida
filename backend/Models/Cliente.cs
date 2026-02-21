@@ -11,7 +11,8 @@ namespace backend.Models
         public byte[]? Foto { get; set; }
 
         // Navigation properties
-        public ICollection<Area> Areas { get; set; } = new List<Area>();
+        public ICollection<Pessoa> Pessoas { get; set; } = new List<Pessoa>();
+        public ICollection<ClienteCargo> ClientesCargos { get; set; } = new List<ClienteCargo>();
         public ICollection<ClienteUsuario> ClientesUsuarios { get; set; } = new List<ClienteUsuario>();
     }
 }

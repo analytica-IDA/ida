@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import { maskCPF, maskPhone, unmask } from '../utils/maskUtils';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -145,7 +146,7 @@ export default function UsersPage() {
           <table className="w-full">
             <thead className="bg-neutral-50/50 dark:bg-neutral-900/50 text-[10px] font-black text-neutral-400 uppercase tracking-[0.15em]">
               <tr>
-                <th className="px-8 py-5 text-left">Identificação</th>
+                <th className="px-8 py-5 text-left">Código / Usuário</th>
                 <th className="px-8 py-5 text-left">Atribuição</th>
                 <th className="px-8 py-5 text-left">Situação</th>
                 <th className="px-8 py-5 text-left">Área</th>
@@ -207,9 +208,7 @@ export default function UsersPage() {
 function UserRow({ user }: { user: User }) {
   const avatarColors = [
     "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-    "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-    "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
-    "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+    "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400",
   ];
   
   const colorIndex = user.id % avatarColors.length;
@@ -218,6 +217,7 @@ function UserRow({ user }: { user: User }) {
     <tr className="group hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
       <td className="px-8 py-6">
         <div className="flex items-center gap-4">
+          <span className="text-xs font-black text-neutral-400 min-w-[2.5rem]">#{user.id}</span>
           <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg transition-transform group-hover:scale-110", avatarColors[colorIndex])}>
             {user.nome.charAt(0)}
           </div>
@@ -249,7 +249,7 @@ function UserRow({ user }: { user: User }) {
         <span className="text-sm font-semibold text-neutral-500">{user.area}</span>
       </td>
       <td className="px-8 py-6">
-        <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex justify-center gap-2 transition-opacity">
           <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 rounded-xl transition-colors">
             <Edit2 size={16} />
           </button>
@@ -345,7 +345,7 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                 <button 
                   type="button"
                   onClick={() => setQuickPessoaOpen(true)}
-                  className="p-4 bg-purple-50 dark:bg-purple-900/30 text-purple-600 rounded-2xl hover:bg-purple-100 transition-colors"
+                  className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors"
                   title="Cadastrar Nova Pessoa"
                 >
                   <Plus size={20} />
@@ -431,7 +431,7 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                 <button 
                   type="button"
                   onClick={() => setQuickAreaOpen(true)}
-                  className="p-4 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 rounded-2xl hover:bg-emerald-100 transition-colors"
+                  className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors"
                   title="Criar Nova Área"
                 >
                   <Plus size={20} />
@@ -485,6 +485,9 @@ function QuickCargoModal({ roles, onClose }: { roles: Role[], onClose: () => voi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cargos'] });
       onClose();
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Erro ao criar cargo');
     }
   });
 
@@ -522,6 +525,9 @@ function QuickAreaModal({ onClose }: { onClose: () => void }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['areas'] });
       onClose();
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Erro ao criar área');
     }
   });
 
@@ -549,10 +555,20 @@ function QuickPessoaModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: any) => api.post('/pessoa', data),
+    mutationFn: (data: any) => {
+      const payload = {
+        ...data,
+        cpf: unmask(data.cpf),
+        telefone: unmask(data.telefone)
+      };
+      return api.post('/pessoa', payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pessoas'] });
       onClose();
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || error.response?.data?.title || 'Erro ao cadastrar pessoa');
     }
   });
 
@@ -571,17 +587,21 @@ function QuickPessoaModal({ onClose }: { onClose: () => void }) {
           />
           <div className="grid grid-cols-2 gap-4">
             <input 
-              type="text" placeholder="CPF" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })}
+              type="text" placeholder="CPF" 
+              value={maskCPF(formData.cpf)} 
+              onChange={e => setFormData({ ...formData, cpf: unmask(e.target.value) })}
               className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
             />
             <input 
-              type="text" placeholder="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+              type="text" placeholder="Telefone" 
+              value={maskPhone(formData.telefone)} 
+              onChange={e => setFormData({ ...formData, telefone: unmask(e.target.value) })}
               className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
             />
           </div>
           <div className="flex gap-2 pt-2">
             <button onClick={onClose} className="flex-1 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl font-bold">Cancelar</button>
-            <button onClick={() => mutation.mutate(formData)} className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold">Cadastrar</button>
+            <button onClick={() => mutation.mutate(formData)} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Cadastrar</button>
           </div>
         </div>
       </motion.div>

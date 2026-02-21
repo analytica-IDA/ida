@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models
 {
@@ -6,10 +7,11 @@ namespace backend.Models
     {
         public string Nome { get; set; } = string.Empty;
 
-        public long IdCliente { get; set; }
-        public Cliente? Cliente { get; set; }
+        [NotMapped]
+        public long? IdCargo { get; set; }
 
         // Navigation properties
         public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+        public ICollection<CargoArea> CargosAreas { get; set; } = new List<CargoArea>();
     }
 }

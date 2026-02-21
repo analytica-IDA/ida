@@ -7,6 +7,7 @@ import PessoasPage from './pages/PessoasPage';
 import ClientesPage from './pages/ClientesPage';
 import CargosPage from './pages/CargosPage';
 import AreasPage from './pages/AreasPage';
+import HomePage from './pages/HomePage';
 import { useEffect, useState } from 'react';
 
 const queryClient = new QueryClient();
@@ -27,6 +28,17 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Hook para limpar cache de autenticação no recarregamento de página (F5) ou fechamento da aba
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
@@ -42,7 +54,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/users" replace />} />
+            <Route index element={<HomePage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="pessoas" element={<PessoasPage />} />
             <Route path="clientes" element={<ClientesPage />} />

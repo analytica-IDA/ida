@@ -18,7 +18,7 @@ export default function LoginPage() {
       const response = await api.post('/user/login', { login, senha });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/users');
+      navigate('/');
     } catch (error: any) {
       alert(error.response?.data?.message || 'Erro ao realizar login. Verifique suas credenciais.');
     } finally {
