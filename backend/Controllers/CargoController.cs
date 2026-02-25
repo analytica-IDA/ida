@@ -28,6 +28,7 @@ namespace backend.Controllers
             var query = _context.Cargos
                 .Include(c => c.Role)
                 .Include(c => c.ClientesCargos)
+                    .ThenInclude(cc => cc.Cliente)
                 .AsQueryable();
 
             // Hierarquia: 
@@ -61,7 +62,8 @@ namespace backend.Controllers
                     c.Nome,
                     c.IdRole,
                     Role = c.Role,
-                    IdCliente = c.ClientesCargos.FirstOrDefault() != null ? (long?)c.ClientesCargos.FirstOrDefault()!.IdCliente : null
+                    IdCliente = c.ClientesCargos.FirstOrDefault() != null ? (long?)c.ClientesCargos.FirstOrDefault()!.IdCliente : null,
+                    NomeCliente = c.ClientesCargos.FirstOrDefault() != null ? c.ClientesCargos.FirstOrDefault()!.Cliente!.Nome : null
                 })
                 .ToListAsync();
 

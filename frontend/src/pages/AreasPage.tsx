@@ -1,4 +1,4 @@
-import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Briefcase } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, MapPin, Loader2, X, Briefcase, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,11 +8,13 @@ interface Area {
   id: number;
   nome: string;
   idCargo?: number;
+  nomeCliente?: string;
 }
 
 export default function AreasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCliente, setSelectedCliente] = useState<string>('');
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [isQuickCargoOpen, setQuickCargoOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -33,6 +35,14 @@ export default function AreasPage() {
     },
   });
 
+  const { data: clientes } = useQuery<any[]>({
+    queryKey: ['clientes'],
+    queryFn: async () => {
+      const { data } = await api.get('/cliente');
+      return data;
+    },
+  });
+
   const { data: areas, isLoading } = useQuery<Area[]>({
     queryKey: ['areas'],
     queryFn: async () => {
@@ -46,9 +56,11 @@ export default function AreasPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['areas'] }),
   });
 
-  const filteredAreas = areas?.filter(a => 
-    a.nome.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAreas = areas?.filter(a => {
+    const matchesSearch = a.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCliente = !selectedCliente || a.nomeCliente === selectedCliente;
+    return matchesSearch && matchesCliente;
+  });
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
@@ -77,6 +89,22 @@ export default function AreasPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 transition-all outline-none"
           />
         </div>
+        
+        {userProfile?.role === 'admin' && (
+          <div className="relative min-w-[200px]">
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+            <select 
+              value={selectedCliente}
+              onChange={(e) => setSelectedCliente(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 transition-all outline-none appearance-none font-medium"
+            >
+              <option value="">Todos os Clientes</option>
+              {clientes?.map(c => (
+                <option key={c.id} value={c.nome}>{c.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden text-sm md:text-base">
@@ -85,13 +113,16 @@ export default function AreasPage() {
             <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
               <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">Código</th>
               <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">Nome da Área</th>
+              {userProfile?.role === 'admin' && (
+                <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300">Cliente</th>
+              )}
               <th className="px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-300 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {isLoading ? (
               <tr>
-                <td colSpan={3} className="px-6 py-20 text-center">
+                <td colSpan={userProfile?.role === 'admin' ? 4 : 3} className="px-6 py-20 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="animate-spin text-blue-600" size={32} />
                     <span className="text-neutral-500">Carregando áreas...</span>
@@ -109,6 +140,13 @@ export default function AreasPage() {
                     <span className="font-medium">{area.nome}</span>
                   </div>
                 </td>
+                {userProfile?.role === 'admin' && (
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                      {area.nomeCliente || 'Sem cliente'}
+                    </span>
+                  </td>
+                )}
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2 transition-opacity">
                     <button 

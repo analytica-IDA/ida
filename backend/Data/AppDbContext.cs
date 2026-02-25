@@ -17,6 +17,7 @@ namespace backend.Data
         public DbSet<ClienteCargo> ClientesCargos { get; set; }
         public DbSet<CargoArea> CargosAreas { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<UsuarioArea> UsuariosAreas { get; set; }
         public DbSet<ClienteUsuario> ClientesUsuarios { get; set; }
         public DbSet<LogAuditoria> LogsAuditoria { get; set; }
         public DbSet<Notificacao> Notificacoes { get; set; }
@@ -173,9 +174,20 @@ namespace backend.Data
                 entity.HasOne(d => d.Cargo)
                     .WithMany(p => p.Usuarios)
                     .HasForeignKey(d => d.IdCargo);
+            });
+
+            // UsuarioArea
+            modelBuilder.Entity<UsuarioArea>(entity =>
+            {
+                entity.ToTable("usuario_area");
+                entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+
+                entity.HasOne(d => d.Usuario)
+                    .WithMany(p => p.UsuariosAreas)
+                    .HasForeignKey(d => d.IdUsuario);
 
                 entity.HasOne(d => d.Area)
-                    .WithMany(p => p.Usuarios)
+                    .WithMany(p => p.UsuariosAreas)
                     .HasForeignKey(d => d.IdArea);
             });
 
@@ -278,7 +290,11 @@ namespace backend.Data
             );
 
             modelBuilder.Entity<Usuario>().HasData(
-                new Usuario { Id = 1, Login = "admin", Senha = BCrypt.Net.BCrypt.HashPassword("T4k3d4@@!"), IdCargo = 1, IdArea = 1, FlAtivo = true }
+                new Usuario { Id = 1, Login = "admin", Senha = BCrypt.Net.BCrypt.HashPassword("T4k3d4@@!"), IdCargo = 1, FlAtivo = true }
+            );
+
+            modelBuilder.Entity<UsuarioArea>().HasData(
+                new UsuarioArea { Id = 1, IdUsuario = 1, IdArea = 1 }
             );
         }
     }

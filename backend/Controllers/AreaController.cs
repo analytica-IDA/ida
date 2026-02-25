@@ -27,8 +27,12 @@ namespace backend.Controllers
 
             var query = _context.Areas
                 .Include(a => a.CargosAreas)
-                .ThenInclude(ca => ca.Cargo)
-                .ThenInclude(c => c!.Role)
+                    .ThenInclude(ca => ca.Cargo)
+                        .ThenInclude(c => c!.ClientesCargos)
+                            .ThenInclude(cc => cc.Cliente)
+                .Include(a => a.CargosAreas)
+                    .ThenInclude(ca => ca.Cargo)
+                        .ThenInclude(c => c!.Role)
                 .AsQueryable();
 
             if (roleId != 1) 
@@ -55,7 +59,8 @@ namespace backend.Controllers
             {
                 a.Id,
                 a.Nome,
-                IdCargo = a.CargosAreas.FirstOrDefault()?.IdCargo
+                IdCargo = a.CargosAreas.FirstOrDefault()?.IdCargo,
+                NomeCliente = a.CargosAreas.FirstOrDefault()?.Cargo?.ClientesCargos.FirstOrDefault()?.Cliente?.Nome
             }).ToList();
 
             return Ok(areas);

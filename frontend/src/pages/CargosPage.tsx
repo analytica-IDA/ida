@@ -16,11 +16,13 @@ interface Cargo {
   idRole: number;
   role?: Role;
   idCliente?: number;
+  nomeCliente?: string;
 }
 
 export default function CargosPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCliente, setSelectedCliente] = useState<string>('');
   const [editingCargo, setEditingCargo] = useState<Cargo | null>(null);
   const [isQuickRoleOpen, setQuickRoleOpen] = useState(false);
   const [isQuickClienteOpen, setQuickClienteOpen] = useState(false);
@@ -63,9 +65,11 @@ export default function CargosPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cargos'] }),
   });
 
-  const filteredCargos = cargos?.filter(c => 
-    c.nome.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCargos = cargos?.filter(c => {
+    const matchesSearch = c.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCliente = !selectedCliente || c.nomeCliente === selectedCliente;
+    return matchesSearch && matchesCliente;
+  });
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
@@ -94,6 +98,22 @@ export default function CargosPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 transition-all outline-none"
           />
         </div>
+        
+        {userProfile?.role === 'admin' && (
+          <div className="relative min-w-[200px]">
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+            <select 
+              value={selectedCliente}
+              onChange={(e) => setSelectedCliente(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 transition-all outline-none appearance-none font-medium"
+            >
+              <option value="">Todos os Clientes</option>
+              {clientes?.map(c => (
+                <option key={c.id} value={c.nome}>{c.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden">
@@ -102,6 +122,9 @@ export default function CargosPage() {
             <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800">
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Código</th>
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Cargo</th>
+              {userProfile?.role === 'admin' && (
+                <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Cliente</th>
+              )}
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300">Nível de Acesso (Role)</th>
               <th className="px-6 py-4 text-sm font-semibold text-neutral-600 dark:text-neutral-300 text-right">Ações</th>
             </tr>
@@ -109,7 +132,7 @@ export default function CargosPage() {
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="px-6 py-20 text-center">
+                <td colSpan={userProfile?.role === 'admin' ? 5 : 4} className="px-6 py-20 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="animate-spin text-blue-600" size={32} />
                     <span className="text-neutral-500">Carregando cargos...</span>
@@ -127,6 +150,13 @@ export default function CargosPage() {
                     <span className="font-medium">{cargo.nome}</span>
                   </div>
                 </td>
+                {userProfile?.role === 'admin' && (
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                      {cargo.nomeCliente || 'Sem cliente'}
+                    </span>
+                  </td>
+                )}
                 <td className="px-6 py-4 font-medium text-neutral-600 dark:text-neutral-400">
                   {cargo.role?.nome || "Sem nível atribuído"}
                 </td>
