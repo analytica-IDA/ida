@@ -1,0 +1,8 @@
+[2026-02-24 20:22:18] Usuario: {"login":"admin","role":"admin"}
+Erro gerado em: /cliente
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=9192be92:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=9192be92:1638:7)
+Data Adicional: {"method":"post","requestData":"{\"nome\":\"Vagalume Toldos e Comunicação\",\"cnpj\":\"999999999999999\"}","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"An error occurred while saving the entity changes. See the inner exception for details."}}
+------------------------------------------------------------

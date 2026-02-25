@@ -191,15 +191,25 @@ namespace backend.Controllers
 
             if (!canCreate) return Forbid();
 
+            // Tenant boundary check
+            var currentUserTenant = currentUser.Pessoa?.IdCliente;
+            if (currentUserRole != "admin")
+            {
+                // Verify if the target cargo belongs to the same tenant
+                var cargoTenant = await _context.ClientesCargos.AnyAsync(cc => cc.IdCargo == request.IdCargo && cc.IdCliente == currentUserTenant);
+                if (!cargoTenant) return BadRequest("O cargo selecionado não pertence ao seu cliente.");
+
+                // Verify if the target pessoa belongs to the same tenant
+                var targetPessoa = await _context.Pessoas.FindAsync(request.IdPessoa);
+                if (targetPessoa == null) return NotFound(new { message = "Pessoa não encontrada" });
+                if (targetPessoa.IdCliente != currentUserTenant) return Forbid("Você não tem permissão para criar um usuário para esta pessoa.");
+            }
+
             // Check if login already exists
             if (await _context.Usuarios.AnyAsync(u => u.Login == request.Login))
             {
                 return BadRequest(new { message = "Este login já está em uso" });
             }
-
-            // Check if Pessoa exists
-            var pessoaExists = await _context.Pessoas.AnyAsync(p => p.Id == request.IdPessoa);
-            if (!pessoaExists) return NotFound(new { message = "Pessoa não encontrada" });
 
             // Check if Usuario already exists for this Pessoa
             var userExists = await _context.Usuarios.AnyAsync(u => u.Id == request.IdPessoa);

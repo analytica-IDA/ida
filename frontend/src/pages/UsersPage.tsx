@@ -51,6 +51,14 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Queries
+  const { data: userProfile } = useQuery<any>({
+    queryKey: ['user-me'],
+    queryFn: async () => {
+      const { data } = await api.get('/user/me');
+      return data;
+    },
+  });
+
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => {
@@ -90,6 +98,15 @@ export default function UsersPage() {
       return data;
     },
   });
+
+  const filteredRoles = roles?.filter(role => {
+    const userRole = userProfile?.role?.toLowerCase();
+    const roleName = role.nome.toLowerCase();
+    if (userRole === 'admin') return true;
+    if (userRole === 'proprietário') return roleName === 'supervisor' || roleName === 'vendedor';
+    if (userRole === 'supervisor') return roleName === 'vendedor';
+    return false;
+  }) || [];
 
   const filteredUsers = users?.filter(u => 
     u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -194,7 +211,7 @@ export default function UsersPage() {
         {isModalOpen && (
           <RegisterModal 
             onClose={() => setModalOpen(false)} 
-            roles={roles || []} 
+            roles={filteredRoles} 
             cargos={cargos || []}
             areas={areas || []}
             pessoas={pessoas || []}
@@ -410,7 +427,7 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                 </button>
               </div>
             </div>
-
+ 
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-neutral-400 ml-1">Área de Atuação</label>
               <div className="flex gap-2">
