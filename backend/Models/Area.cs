@@ -11,7 +11,7 @@ namespace backend.Models
         public long? IdCargo { get; set; }
 
         // Navigation properties
-        public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+        public ICollection<UsuarioArea> UsuariosAreas { get; set; } = new List<UsuarioArea>();
         public ICollection<CargoArea> CargosAreas { get; set; } = new List<CargoArea>();
     }
 }

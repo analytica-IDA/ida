@@ -24,13 +24,24 @@ namespace backend.Controllers
             var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
             var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
 
-            var query = _context.Pessoas.AsQueryable();
+            var query = _context.Pessoas.Include(p => p.Cliente).AsQueryable();
             if (roleId != 1) 
             {
                 query = query.Where(p => p.IdCliente == idCliente);
             }
 
-            var pessoas = await query.ToListAsync();
+            var dbPessoas = await query.ToListAsync();
+            var pessoas = dbPessoas.Select(p => new {
+                p.Id,
+                p.Nome,
+                p.Cpf,
+                p.Email,
+                p.Telefone,
+                p.IdCliente,
+                NomeCliente = p.Cliente?.Nome,
+                p.DtUltimaAtualizacao
+            }).ToList();
+
             return Ok(pessoas);
         }
 

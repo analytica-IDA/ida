@@ -61,7 +61,8 @@ namespace backend.Controllers
                 .Include(u => u.Pessoa)
                 .Include(u => u.Cargo)
                 .ThenInclude(c => c!.Role)
-                .Include(u => u.Area)
+                .Include(u => u.UsuariosAreas)
+                .ThenInclude(ua => ua.Area)
                 .AsQueryable();
 
             if (roleId != 1)
@@ -92,7 +93,7 @@ namespace backend.Controllers
                     Email = u.Pessoa!.Email,
                     Cargo = u.Cargo!.Nome,
                     RoleDescription = u.Cargo!.Role!.Nome,
-                    Area = u.Area!.Nome,
+                    Areas = u.UsuariosAreas.Select(ua => ua.Area!.Nome).ToList(),
                     u.FlAtivo,
                     u.DtUltimaAtualizacao
                 })
@@ -223,12 +224,24 @@ namespace backend.Controllers
                     Login = request.Login,
                     Senha = _authService.HashPassword(request.Senha),
                     IdCargo = request.IdCargo,
-                    IdArea = request.IdArea,
                     FlAtivo = true,
                     DtUltimaAtualizacao = DateTime.Now
                 };
 
                 _context.Usuarios.Add(usuario);
+                
+                if (request.IdAreas != null && request.IdAreas.Any())
+                {
+                    foreach (var areaId in request.IdAreas)
+                    {
+                        _context.UsuariosAreas.Add(new UsuarioArea
+                        {
+                            IdUsuario = usuario.Id,
+                            IdArea = areaId
+                        });
+                    }
+                }
+
                 await _context.SaveChangesAsync();
 
                 await _auditService.LogAction(currentUser.Login, "REGISTER_USER", "usuario", usuario.Id.ToString(), $"Usuário {request.Login} criado e vinculado à pessoa {request.IdPessoa}");
@@ -263,7 +276,8 @@ namespace backend.Controllers
                 .ThenInclude(c => c!.Role)
                 .Include(u => u.Cargo!)
                 .ThenInclude(c => c.ClientesCargos)
-                .Include(u => u.Area)
+                .Include(u => u.UsuariosAreas)
+                .ThenInclude(ua => ua.Area)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return NotFound("Usuário não encontrado");
@@ -275,7 +289,7 @@ namespace backend.Controllers
                 Cpf = user.Pessoa?.Cpf,
                 Email = user.Pessoa?.Email,
                 Cargo = user.Cargo?.Nome,
-                Area = user.Area?.Nome,
+                Areas = user.UsuariosAreas.Select(ua => ua.Area?.Nome).ToList(),
                 Role = user.Cargo?.Role?.Nome,
                 IdCliente = user.Pessoa?.IdCliente
             });
@@ -324,7 +338,7 @@ namespace backend.Controllers
         public string Login { get; set; } = ""; 
         public string Senha { get; set; } = ""; 
         public long IdCargo { get; set; } 
-        public long IdArea { get; set; }
+        public List<long> IdAreas { get; set; } = new List<long>();
     }
     public class ForgotPasswordRequest { public string Login { get; set; } = ""; }
     public class ChangePasswordRequest

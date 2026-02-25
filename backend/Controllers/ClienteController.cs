@@ -36,9 +36,53 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Cliente cliente)
         {
-            _context.Clientes.Add(cliente);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = cliente.Id }, cliente);
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Clientes.Add(cliente);
+                await _context.SaveChangesAsync();
+
+                // Check if current user is admin (roleId == 1)
+                var roleIdClaim = User.FindFirst("roleId")?.Value;
+                if (roleIdClaim == "1")
+                {
+                    // 1. Create default Cargo "Proprietário(a)" (Role ID 2)
+                    var cargoProp = new Cargo { Nome = "Proprietário(a)", IdRole = 2 };
+                    _context.Cargos.Add(cargoProp);
+                    await _context.SaveChangesAsync();
+
+                    _context.ClientesCargos.Add(new ClienteCargo { IdCliente = cliente.Id, IdCargo = cargoProp.Id });
+
+                    var areaProp = new Area { Nome = "Proprietário(a)" };
+                    _context.Areas.Add(areaProp);
+                    await _context.SaveChangesAsync();
+
+                    _context.CargosAreas.Add(new CargoArea { IdCargo = cargoProp.Id, IdArea = areaProp.Id });
+
+                    // 2. Create default Cargo "Vendedor" (Role ID 4)
+                    var cargoVend = new Cargo { Nome = "Vendedor", IdRole = 4 };
+                    _context.Cargos.Add(cargoVend);
+                    await _context.SaveChangesAsync();
+
+                    _context.ClientesCargos.Add(new ClienteCargo { IdCliente = cliente.Id, IdCargo = cargoVend.Id });
+
+                    var areaVend = new Area { Nome = "Vendedor" };
+                    _context.Areas.Add(areaVend);
+                    await _context.SaveChangesAsync();
+
+                    _context.CargosAreas.Add(new CargoArea { IdCargo = cargoVend.Id, IdArea = areaVend.Id });
+
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return CreatedAtAction(nameof(GetById), new { id = cliente.Id }, cliente);
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         [HttpPut("{id}")]

@@ -16,10 +16,8 @@ namespace backend.Models
         public long IdCargo { get; set; }
         public Cargo? Cargo { get; set; }
 
-        public long IdArea { get; set; }
-        public Area? Area { get; set; }
-
-        // Navigation property for many-to-many with Cliente
+        // Navigation properties
+        public ICollection<UsuarioArea> UsuariosAreas { get; set; } = new List<UsuarioArea>();
         public ICollection<ClienteUsuario> ClientesUsuarios { get; set; } = new List<ClienteUsuario>();
     }
 }

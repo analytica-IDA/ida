@@ -1,4 +1,4 @@
-import { Plus, Search, Filter, Edit2, Trash2, X, User as UserIcon, Lock, Shield, MapPin, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, Edit2, Trash2, X, User as UserIcon, Lock, Shield, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ interface User {
   email: string;
   cargo: string;
   roleDescription: string;
-  area: string;
+  areas: string[];
   flAtivo: boolean;
   dtUltimaAtualizacao: string;
 }
@@ -263,7 +263,16 @@ function UserRow({ user }: { user: User }) {
         </span>
       </td>
       <td className="px-8 py-6">
-        <span className="text-sm font-semibold text-neutral-500">{user.area}</span>
+        <div className="flex flex-wrap gap-1 max-w-[200px]">
+          {user.areas?.map((area, idx) => (
+            <span key={idx} className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-bold text-neutral-500 whitespace-nowrap">
+              {area}
+            </span>
+          ))}
+          {(!user.areas || user.areas.length === 0) && (
+            <span className="text-sm font-semibold text-neutral-400 italic">Nenhuma</span>
+          )}
+        </div>
       </td>
       <td className="px-8 py-6">
         <div className="flex justify-center gap-2 transition-opacity">
@@ -285,7 +294,7 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
     login: '',
     senha: '',
     idCargo: cargos[0]?.id || 0,
-    idArea: areas[0]?.id || 0,
+    idAreas: [] as number[],
   });
 
   const [isQuickCargoOpen, setQuickCargoOpen] = useState(false);
@@ -427,6 +436,7 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                 </button>
               </div>
             </div>
+<<<<<<< HEAD
  
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-neutral-400 ml-1">Área de Atuação</label>
@@ -438,20 +448,49 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                     value={formData.idArea}
                     onChange={e => setFormData({...formData, idArea: Number(e.target.value)})}
                     className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all font-bold text-neutral-800 dark:text-white appearance-none"
+=======
+
+            <div className="md:col-span-2 space-y-3">
+              <label className="text-xs font-black uppercase tracking-widest text-neutral-400 ml-1">Áreas de Atuação</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {areas.map(area => (
+                  <label 
+                    key={area.id}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition-all",
+                      formData.idAreas.includes(area.id) 
+                        ? "bg-blue-50 dark:bg-blue-900/20 border-blue-500/50 text-blue-700 dark:text-blue-400" 
+                        : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600"
+                    )}
+>>>>>>> 7cf37d896ba9dc12dc7ff599823eba7498088847
                   >
-                    <option value="">Selecione...</option>
-                    {areas.map(area => (
-                      <option key={area.id} value={area.id}>{area.nome}</option>
-                    ))}
-                  </select>
-                </div>
+                    <input 
+                      type="checkbox"
+                      className="hidden"
+                      checked={formData.idAreas.includes(area.id)}
+                      onChange={() => {
+                        const newAreas = formData.idAreas.includes(area.id)
+                          ? formData.idAreas.filter(id => id !== area.id)
+                          : [...formData.idAreas, area.id];
+                        setFormData({ ...formData, idAreas: newAreas });
+                      }}
+                    />
+                    <div className={cn(
+                      "w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all",
+                      formData.idAreas.includes(area.id) ? "bg-blue-600 border-blue-600" : "border-neutral-300 dark:border-neutral-600"
+                    )}>
+                      {formData.idAreas.includes(area.id) && <Plus size={14} strokeWidth={4} className="text-white rotate-45" />}
+                    </div>
+                    <span className="text-sm font-bold truncate">{area.nome}</span>
+                  </label>
+                ))}
                 <button 
                   type="button"
                   onClick={() => setQuickAreaOpen(true)}
-                  className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-2xl hover:bg-blue-100 transition-colors"
-                  title="Criar Nova Área"
+                  className="flex items-center justify-center gap-2 p-3 bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-2xl text-neutral-400 hover:text-blue-500 hover:border-blue-500/50 transition-all font-bold text-sm"
                 >
-                  <Plus size={20} />
+                  <Plus size={18} />
+                  <span>Nova</span>
                 </button>
               </div>
             </div>
