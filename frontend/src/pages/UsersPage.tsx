@@ -436,20 +436,6 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                 </button>
               </div>
             </div>
-<<<<<<< HEAD
- 
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-neutral-400 ml-1">Área de Atuação</label>
-              <div className="flex gap-2">
-                <div className="relative group flex-1">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                  <select 
-                    required
-                    value={formData.idArea}
-                    onChange={e => setFormData({...formData, idArea: Number(e.target.value)})}
-                    className="w-full pl-12 pr-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 transition-all font-bold text-neutral-800 dark:text-white appearance-none"
-=======
-
             <div className="md:col-span-2 space-y-3">
               <label className="text-xs font-black uppercase tracking-widest text-neutral-400 ml-1">Áreas de Atuação</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -462,7 +448,6 @@ function RegisterModal({ onClose, roles, cargos, areas, pessoas }: { onClose: ()
                         ? "bg-blue-50 dark:bg-blue-900/20 border-blue-500/50 text-blue-700 dark:text-blue-400" 
                         : "bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-600"
                     )}
->>>>>>> 7cf37d896ba9dc12dc7ff599823eba7498088847
                   >
                     <input 
                       type="checkbox"

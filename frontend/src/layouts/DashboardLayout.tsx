@@ -55,11 +55,12 @@ const menuOrder = [
 export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isUserMenuOpen, setUserMenuOpen] = useState(false);
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
   const [isChangePasswordOpen, setChangePasswordOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data: userProfile } = useQuery({
+  const { data: userProfile } = useQuery<any>({
     queryKey: ['user-me'],
     queryFn: async () => {
       const { data } = await api.get('/user/me');
@@ -75,6 +76,24 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
     },
   });
 
+  const { data: notificacoes, refetch: refetchNotificacoes } = useQuery<any[]>({
+    queryKey: ['notificacoes'],
+    queryFn: async () => {
+      const { data } = await api.get('/notification/nao-lidas');
+      return data;
+    },
+    refetchInterval: 30000,
+  });
+
+  const markAsRead = async (id: number) => {
+    try {
+      await api.post(`/notification/${id}/ler`);
+      refetchNotificacoes();
+    } catch (error) {
+      console.error('Erro ao marcar notificação como lida', error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -85,6 +104,9 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
     const handleClickOutside = (event: any) => {
       if (isUserMenuOpen && !event.target.closest('.user-menu-container')) {
         setUserMenuOpen(false);
+      }
+      if (isNotificationOpen && !event.target.closest('.notification-container')) {
+        setNotificationOpen(false);
       }
     };
     window.addEventListener('mousedown', handleClickOutside);
@@ -167,11 +189,64 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-full border border-neutral-200 dark:border-neutral-700">
-               <button className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-full transition-all text-neutral-400 relative">
-                <Bell size={18} />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-white dark:border-neutral-800"></span>
-              </button>
+            <div className="relative notification-container">
+              <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-full border border-neutral-200 dark:border-neutral-700">
+                 <button 
+                  onClick={() => setNotificationOpen(!isNotificationOpen)}
+                  className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-full transition-all text-neutral-400 relative"
+                 >
+                  <Bell size={18} />
+                  {notificacoes && notificacoes.length > 0 && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-white dark:border-neutral-800 animate-pulse"></span>
+                  )}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {isNotificationOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-3 w-80 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xl p-0 z-50 overflow-hidden"
+                  >
+                    <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-center justify-between">
+                      <p className="text-sm font-black text-neutral-900 dark:text-neutral-100">Notificações</p>
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">{notificacoes?.length || 0} novas</span>
+                    </div>
+                    
+                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                      {notificacoes && notificacoes.length > 0 ? (
+                        notificacoes.map((notif: any) => (
+                          <div key={notif.id} className="p-4 border-b border-neutral-50 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group">
+                            <div className="flex justify-between items-start gap-3">
+                              <div className="flex-1">
+                                <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">{notif.titulo}</p>
+                                <p className="text-xs text-neutral-500 mt-1 leading-relaxed">{notif.mensagem}</p>
+                                <span className="text-[10px] font-semibold text-neutral-400 mt-2 block">{new Date(notif.dtUltimaAtualizacao).toLocaleDateString('pt-BR')} às {new Date(notif.dtUltimaAtualizacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute:'2-digit' })}</span>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={() => markAsRead(notif.id)}
+                                className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                Marcar como lida
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                          <Bell size={32} className="text-neutral-300 dark:text-neutral-600 mb-3" />
+                          <p className="text-sm font-bold text-neutral-500">Nenhuma notificação</p>
+                          <p className="text-xs text-neutral-400 mt-1">Você está em dia!</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             <div className="h-8 w-[px] bg-neutral-200 dark:bg-neutral-800"></div>
