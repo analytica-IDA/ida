@@ -21,6 +21,8 @@ namespace backend.Data
         public DbSet<ClienteUsuario> ClientesUsuarios { get; set; }
         public DbSet<LogAuditoria> LogsAuditoria { get; set; }
         public DbSet<Notificacao> Notificacoes { get; set; }
+        public DbSet<ModeloControle> ModelosControles { get; set; }
+        public DbSet<ClienteModeloControle> ClientesModelosControles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -88,6 +90,28 @@ namespace backend.Data
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Telefone).IsRequired().HasMaxLength(14);
                 entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+            });
+
+            // ModeloControle
+            modelBuilder.Entity<ModeloControle>(entity =>
+            {
+                entity.ToTable("modelo_controle");
+                entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+            });
+
+            // ClienteModeloControle
+            modelBuilder.Entity<ClienteModeloControle>(entity =>
+            {
+                entity.ToTable("cliente_modelo_controle");
+
+                entity.HasOne(d => d.Cliente)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdCliente);
+
+                entity.HasOne(d => d.ModeloControle)
+                    .WithMany(p => p.ClientesModelosControles)
+                    .HasForeignKey(d => d.IdModeloControle);
             });
 
             // Pessoa
@@ -210,6 +234,11 @@ namespace backend.Data
                     .HasForeignKey(d => d.IdArea);
             });
 
+            SeedData(modelBuilder);
+        }
+
+        private void SeedData(ModelBuilder modelBuilder)
+        {
             // Seed Data
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Nome = "admin" },
@@ -218,7 +247,6 @@ namespace backend.Data
                 new Role { Id = 4, Nome = "vendedor" }
             );
 
-            // "Página Inicial", "Dashboard", "Gerenciamento de Cliente", "Gerenciamento de Pessoa", "Gerenciamento de Cargo", "Gerenciamento de Área", "Gerenciamento de Usuário", "Relatórios", "Configurações"
             modelBuilder.Entity<Aplicacao>().HasData(
                 new Aplicacao { Id = 1, Nome = "Página Inicial" },
                 new Aplicacao { Id = 2, Nome = "Dashboard" },
@@ -228,7 +256,15 @@ namespace backend.Data
                 new Aplicacao { Id = 6, Nome = "Gerenciamento de Área" },
                 new Aplicacao { Id = 7, Nome = "Gerenciamento de Usuário" },
                 new Aplicacao { Id = 8, Nome = "Relatórios" },
-                new Aplicacao { Id = 9, Nome = "Configurações" }
+                new Aplicacao { Id = 9, Nome = "Configurações" },
+                new Aplicacao { Id = 10, Nome = "Gerenciamento de Modelo de Controle" }
+            );
+
+            // ModeloControle Seed
+            modelBuilder.Entity<ModeloControle>().HasData(
+                new ModeloControle { Id = 1, Nome = "Cadastros" },
+                new ModeloControle { Id = 2, Nome = "Varejo" },
+                new ModeloControle { Id = 3, Nome = "Saúde" }
             );
 
             modelBuilder.Entity<RoleAplicacao>().HasData(
@@ -242,6 +278,7 @@ namespace backend.Data
                 new RoleAplicacao { Id = 7, IdRole = 1, IdAplicacao = 7 },
                 new RoleAplicacao { Id = 8, IdRole = 1, IdAplicacao = 8 },
                 new RoleAplicacao { Id = 9, IdRole = 1, IdAplicacao = 9 },
+                new RoleAplicacao { Id = 25, IdRole = 1, IdAplicacao = 10 },
                 
                 // Proprietário: Página Inicial(1), Dashboard(2), Pessoa(4), Cargo(5), Área(6), Usuário(7), Relatórios(8)
                 new RoleAplicacao { Id = 10, IdRole = 2, IdAplicacao = 1 },

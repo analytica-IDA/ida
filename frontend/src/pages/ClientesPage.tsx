@@ -1,4 +1,4 @@
-import { Plus, Search, Edit2, Trash2, Building2, Loader2, X, Users } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building2, Loader2, X, Users, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,9 +28,22 @@ interface ClienteUsuario {
   idArea: number;
 }
 
+interface ModeloControle {
+  id: number;
+  nome: string;
+}
+
+interface ClienteModeloControle {
+  id: number;
+  idCliente: number;
+  idModeloControle: number;
+  modeloControle?: ModeloControle;
+}
+
 export default function ClientesPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isUserModalOpen, setUserModalOpen] = useState(false);
+  const [isModelModalOpen, setModelModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [targetCliente, setTargetCliente] = useState<Cliente | null>(null);
@@ -49,7 +62,7 @@ export default function ClientesPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['clientes'] }),
   });
 
-  const filteredClientes = clientes?.filter(c => 
+  const filteredClientes = clientes?.filter(c =>
     c.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -60,7 +73,7 @@ export default function ClientesPage() {
           <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">Gerenciamento de Clientes</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mt-1">Gerencie as empresas e parceiros do sistema.</p>
         </div>
-        <button 
+        <button
           onClick={() => { setEditingCliente(null); setModalOpen(true); }}
           className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 font-semibold"
         >
@@ -72,9 +85,9 @@ export default function ClientesPage() {
       <div className="flex items-center gap-4 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
-          <input 
-            type="text" 
-            placeholder="Buscar por nome do cliente..." 
+          <input
+            type="text"
+            placeholder="Buscar por nome do cliente..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-neutral-50 dark:bg-neutral-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 transition-all outline-none"
@@ -118,21 +131,28 @@ export default function ClientesPage() {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2 transition-opacity">
-                    <button 
+                    <button
                       onClick={() => { setTargetCliente(cliente); setUserModalOpen(true); }}
                       className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-blue-600 hover:text-blue-700 transition-colors shadow-sm"
                       title="Gerenciar Usuários"
                     >
                       <Users size={18} />
                     </button>
-                    <button 
+                    <button
+                      onClick={() => { setTargetCliente(cliente); setModelModalOpen(true); }}
+                      className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-emerald-600 hover:text-emerald-700 transition-colors shadow-sm"
+                      title="Gerenciar Modelos de Controle"
+                    >
+                      <ShieldCheck size={18} />
+                    </button>
+                    <button
                       onClick={() => { setEditingCliente(cliente); setModalOpen(true); }}
                       className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-neutral-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                       <Edit2 size={18} />
                     </button>
-                    <button 
-                      onClick={() => { if(confirm('Excluir cliente?')) deleteMutation.mutate(cliente.id); }}
+                    <button
+                      onClick={() => { if (confirm('Excluir cliente?')) deleteMutation.mutate(cliente.id); }}
                       className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-lg text-neutral-500 hover:text-red-600 transition-colors shadow-sm"
                     >
                       <Trash2 size={18} />
@@ -147,14 +167,20 @@ export default function ClientesPage() {
 
       <AnimatePresence>
         {isModalOpen && (
-          <ClienteModal 
-            onClose={() => setModalOpen(false)} 
+          <ClienteModal
+            onClose={() => setModalOpen(false)}
             cliente={editingCliente}
           />
         )}
         {isUserModalOpen && targetCliente && (
-          <ClientUserModal 
-            onClose={() => setUserModalOpen(false)} 
+          <ClientUserModal
+            onClose={() => setUserModalOpen(false)}
+            cliente={targetCliente}
+          />
+        )}
+        {isModelModalOpen && targetCliente && (
+          <ClientControlModelModal
+            onClose={() => setModelModalOpen(false)}
             cliente={targetCliente}
           />
         )}
@@ -209,7 +235,7 @@ function ClientUserModal({ onClose, cliente }: { onClose: () => void; cliente: C
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
         className="bg-white dark:bg-neutral-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800"
       >
@@ -227,7 +253,7 @@ function ClientUserModal({ onClose, cliente }: { onClose: () => void; cliente: C
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-50 dark:bg-neutral-800/50 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Usuário</label>
-              <select 
+              <select
                 value={selectedUser} onChange={e => setSelectedUser(Number(e.target.value))}
                 className="w-full px-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold text-sm"
               >
@@ -238,14 +264,14 @@ function ClientUserModal({ onClose, cliente }: { onClose: () => void; cliente: C
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Área / Unidade</label>
               <div className="flex gap-2">
-                <select 
-                    value={selectedArea} onChange={e => setSelectedArea(Number(e.target.value))}
-                    className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold text-sm"
+                <select
+                  value={selectedArea} onChange={e => setSelectedArea(Number(e.target.value))}
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold text-sm"
                 >
-                    <option value={0}>Selecionar Área...</option>
-                    {allAreas?.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+                  <option value={0}>Selecionar Área...</option>
+                  {allAreas?.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
                 </select>
-                <button 
+                <button
                   type="button"
                   onClick={() => setQuickAreaOpen(true)}
                   className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
@@ -255,7 +281,7 @@ function ClientUserModal({ onClose, cliente }: { onClose: () => void; cliente: C
                 </button>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => associateMutation.mutate({ idUsuario: selectedUser, idArea: selectedArea })}
               disabled={!selectedUser || !selectedArea || associateMutation.isPending}
               className="md:col-span-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -293,7 +319,7 @@ function ClientUserModal({ onClose, cliente }: { onClose: () => void; cliente: C
                       <p className="text-[10px] font-black uppercase tracking-tighter text-blue-600">{assoc.area}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => removeMutation.mutate(assoc.idUsuario)}
                     className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-300 hover:text-red-600 rounded-lg transition-colors"
                   >
@@ -314,7 +340,7 @@ function ClienteModal({ onClose, cliente }: { onClose: () => void; cliente: Clie
     nome: cliente?.nome || '',
     cnpj: cliente?.cnpj || ''
   });
-  
+
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: typeof formData) => {
@@ -332,7 +358,7 @@ function ClienteModal({ onClose, cliente }: { onClose: () => void; cliente: Clie
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -351,7 +377,7 @@ function ClienteModal({ onClose, cliente }: { onClose: () => void; cliente: Clie
               <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">Nome do Cliente / Empresa</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                <input 
+                <input
                   type="text" required
                   value={formData.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
@@ -365,7 +391,7 @@ function ClienteModal({ onClose, cliente }: { onClose: () => void; cliente: Clie
               <label className="block text-sm font-medium mb-1.5 text-neutral-700 dark:text-neutral-300">CNPJ</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                <input 
+                <input
                   type="text" required
                   value={maskCNPJ(formData.cnpj)}
                   onChange={(e) => setFormData({ ...formData, cnpj: unmask(e.target.value) })}
@@ -377,14 +403,14 @@ function ClienteModal({ onClose, cliente }: { onClose: () => void; cliente: Clie
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="flex-1 px-4 py-2.5 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
             >
               Cancelar
             </button>
-            <button 
+            <button
               type="submit"
               disabled={mutation.isPending}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -411,14 +437,14 @@ function QuickAreaOverlay({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <motion.div 
-      initial={{ scale: 0.9, opacity: 0 }} 
-      animate={{ scale: 1, opacity: 1 }} 
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
       className="bg-white dark:bg-neutral-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-neutral-800"
     >
       <h4 className="text-xl font-bold mb-6">Nova Área</h4>
       <div className="space-y-4">
-        <input 
+        <input
           type="text" placeholder="Nome da área/unidade" autoFocus value={nome} onChange={e => setNome(e.target.value)}
           className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold placeholder:text-neutral-400"
         />
@@ -428,5 +454,119 @@ function QuickAreaOverlay({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function ClientControlModelModal({ onClose, cliente }: { onClose: () => void; cliente: Cliente }) {
+  const [selectedModel, setSelectedModel] = useState<number>(0);
+  const queryClient = useQueryClient();
+
+  const { data: associations, isLoading: loadingAssoc } = useQuery<ClienteModeloControle[]>({
+    queryKey: ['cliente-modelos', cliente.id],
+    queryFn: async () => {
+      const { data } = await api.get('/ClienteModeloControle');
+      return data.filter((m: ClienteModeloControle) => m.idCliente === cliente.id);
+    },
+  });
+
+  const { data: allModels } = useQuery<ModeloControle[]>({
+    queryKey: ['modelos-controle'],
+    queryFn: async () => {
+      const { data } = await api.get('/ModeloControle');
+      return data;
+    },
+  });
+
+  const associateMutation = useMutation({
+    mutationFn: (idModeloControle: number) => api.post('/ClienteModeloControle', {
+      idCliente: cliente.id,
+      idModeloControle
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cliente-modelos', cliente.id] });
+      setSelectedModel(0);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/ClienteModeloControle/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cliente-modelos', cliente.id] }),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white dark:bg-neutral-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800"
+      >
+        <div className="px-8 py-6 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-800/50">
+          <div>
+            <h2 className="text-xl font-bold">Modelos de Controle</h2>
+            <p className="text-xs text-neutral-500 font-medium uppercase tracking-wider">{cliente.nome}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-full transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-8 space-y-6">
+          <div className="flex gap-4 bg-neutral-50 dark:bg-neutral-800/50 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800">
+            <div className="flex-1 space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Modelo de Controle</label>
+              <select
+                value={selectedModel} onChange={e => setSelectedModel(Number(e.target.value))}
+                className="w-full px-4 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none font-bold text-sm"
+              >
+                <option value={0}>Selecionar Modelo...</option>
+                {allModels?.filter(m => !associations?.some(a => a.idModeloControle === m.id)).map(m => (
+                  <option key={m.id} value={m.id}>{m.nome}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => associateMutation.mutate(selectedModel)}
+                disabled={!selectedModel || associateMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 flex items-center gap-2 h-[46px]"
+              >
+                {associateMutation.isPending ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                <span>Vincular</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-bold text-sm text-neutral-500 uppercase tracking-widest ml-1">Modelos Ativos</h3>
+            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+              {loadingAssoc ? (
+                <div className="py-10 flex justify-center"><Loader2 className="animate-spin text-blue-600" /></div>
+              ) : associations?.length === 0 ? (
+                <div className="py-10 text-center text-sm font-bold text-neutral-400 bg-neutral-50 dark:bg-neutral-800/20 rounded-2xl border-2 border-dashed border-neutral-100 dark:border-neutral-800">
+                  Nenhum modelo vinculado
+                </div>
+              ) : associations?.map(assoc => (
+                <div key={assoc.id} className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-800 rounded-2xl group hover:border-emerald-500/30 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 font-black">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">{assoc.modeloControle?.nome}</p>
+                      <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-600">Ativo</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeMutation.mutate(assoc.id)}
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-300 hover:text-red-600 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
