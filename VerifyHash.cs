@@ -1,0 +1,1 @@
+using System; using BCrypt.Net; class Program { static void Main() { string hash = BCrypt.Net.BCrypt.HashPassword("abc123"); Console.WriteLine(hash); bool matches = BCrypt.Net.BCrypt.Verify("abc123", hash); Console.WriteLine("Matches: " + matches); } }
