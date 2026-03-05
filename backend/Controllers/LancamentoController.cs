@@ -72,7 +72,7 @@ namespace backend.Controllers
             {
                 var query = _context.LancamentosCadastro
                     .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario).ThenInclude(u => u.Pessoa)
+                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
                     .AsQueryable();
                     
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
@@ -84,7 +84,7 @@ namespace backend.Controllers
             {
                 var query = _context.LancamentosVarejo
                     .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario).ThenInclude(u => u.Pessoa)
+                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
                     .AsQueryable();
                     
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
@@ -96,7 +96,7 @@ namespace backend.Controllers
             {
                 var query = _context.LancamentosSaude
                     .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario).ThenInclude(u => u.Pessoa)
+                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
                     .AsQueryable();
                     
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
