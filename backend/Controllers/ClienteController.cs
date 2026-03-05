@@ -21,7 +21,18 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var clientes = await _context.Clientes.ToListAsync();
+            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
+            var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+            var userId = long.Parse(User.FindFirst("id")?.Value ?? "0");
+
+            var query = _context.Clientes.AsQueryable();
+
+            if (roleId != 1) // If not admin
+            {
+                query = query.Where(c => c.Id == idCliente || _context.ClientesUsuarios.Any(cu => cu.IdUsuario == userId && cu.IdCliente == c.Id));
+            }
+
+            var clientes = await query.ToListAsync();
             return Ok(clientes);
         }
 

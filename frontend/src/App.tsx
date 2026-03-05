@@ -7,6 +7,7 @@ import PessoasPage from './pages/PessoasPage';
 import ClientesPage from './pages/ClientesPage';
 import CargosPage from './pages/CargosPage';
 import AreasPage from './pages/AreasPage';
+import LancamentosPage from './pages/LancamentosPage.tsx';
 import HomePage from './pages/HomePage';
 import { useEffect, useState } from 'react';
 
@@ -34,7 +35,7 @@ function App() {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     };
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
@@ -46,8 +47,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <ProtectedRoute>
                 <DashboardLayout toggleTheme={toggleTheme} theme={theme} />
@@ -60,6 +61,7 @@ function App() {
             <Route path="clientes" element={<ClientesPage />} />
             <Route path="cargos" element={<CargosPage />} />
             <Route path="areas" element={<AreasPage />} />
+            <Route path="lancamentos" element={<LancamentosPage />} />
             <Route path="dashboard" element={<div>Dashboard Placeholder</div>} />
             <Route path="notifications" element={<div>Notifications Placeholder</div>} />
             <Route path="settings" element={<div>Settings Placeholder</div>} />

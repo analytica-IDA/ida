@@ -37,5 +37,20 @@ namespace backend.Controllers
             await _notificationService.MarcarComoLidaAsync(id, userId);
             return Ok(new { message = "Notificação marcada como lida." });
         }
+
+        [Authorize]
+        [HttpPost("ler-todas")]
+        public async Task<IActionResult> MarcarTodasComoLidas()
+        {
+            var userId = long.Parse(User.FindFirst("id")?.Value ?? "0");
+            if (userId == 0) return Unauthorized();
+
+            var notificacoes = await _notificationService.GetNotificacoesNaoLidasAsync(userId);
+            foreach (var n in notificacoes)
+            {
+                await _notificationService.MarcarComoLidaAsync(n.Id, userId);
+            }
+            return Ok(new { message = "Todas as notificações marcadas como lidas." });
+        }
     }
 }

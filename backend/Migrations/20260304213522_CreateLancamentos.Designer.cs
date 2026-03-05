@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304213522_CreateLancamentos")]
+    partial class CreateLancamentos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,67 +52,67 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4391),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6010),
                             Nome = "Página Inicial"
                         },
                         new
                         {
                             Id = 2L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4392),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6012),
                             Nome = "Dashboard"
                         },
                         new
                         {
                             Id = 3L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4392),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6014),
                             Nome = "Gerenciamento de Cliente"
                         },
                         new
                         {
                             Id = 4L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4393),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6015),
                             Nome = "Gerenciamento de Pessoa"
                         },
                         new
                         {
                             Id = 5L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4394),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6016),
                             Nome = "Gerenciamento de Cargo"
                         },
                         new
                         {
                             Id = 6L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4395),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6018),
                             Nome = "Gerenciamento de Área"
                         },
                         new
                         {
                             Id = 7L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4395),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6019),
                             Nome = "Gerenciamento de Usuário"
                         },
                         new
                         {
                             Id = 8L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4396),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6020),
                             Nome = "Relatórios"
                         },
                         new
                         {
                             Id = 9L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4397),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6022),
                             Nome = "Configurações"
                         },
                         new
                         {
                             Id = 10L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4397),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6023),
                             Nome = "Gerenciamento de Modelo de Controle"
                         },
                         new
                         {
                             Id = 11L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4476),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6024),
                             Nome = "Gerenciamento de Lançamentos"
                         });
                 });
@@ -140,7 +143,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4784),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6577),
                             Nome = "Administração"
                         });
                 });
@@ -176,7 +179,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4743),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6504),
                             IdRole = 1L,
                             Nome = "Administrador"
                         });
@@ -213,7 +216,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4845),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6686),
                             IdArea = 1L,
                             IdCargo = 1L
                         });
@@ -264,7 +267,7 @@ namespace backend.Migrations
                         {
                             Id = 1L,
                             Cnpj = "00000000000000",
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4673),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6417),
                             Email = "suporte@analytica.com",
                             Nome = "Analytica IDA",
                             Telefone = "00000000000"
@@ -302,7 +305,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4815),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6628),
                             IdCargo = 1L,
                             IdCliente = 1L
                         });
@@ -471,19 +474,19 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4536),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6095),
                             Nome = "Cadastros"
                         },
                         new
                         {
                             Id = 2L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4538),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6098),
                             Nome = "Varejo"
                         },
                         new
                         {
                             Id = 3L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4539),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6100),
                             Nome = "Saúde"
                         });
                 });
@@ -580,7 +583,7 @@ namespace backend.Migrations
                         {
                             Id = 1L,
                             Cpf = "00000000000",
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4874),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6736),
                             Email = "suporte@analytica.com",
                             IdCliente = 1L,
                             Nome = "Administrador",
@@ -614,25 +617,25 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4097),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(5553),
                             Nome = "admin"
                         },
                         new
                         {
                             Id = 2L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4101),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(5560),
                             Nome = "proprietário"
                         },
                         new
                         {
                             Id = 3L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4102),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(5562),
                             Nome = "supervisor"
                         },
                         new
                         {
                             Id = 4L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4102),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(5563),
                             Nome = "vendedor"
                         });
                 });
@@ -668,203 +671,196 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4575),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6157),
                             IdAplicacao = 1L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 2L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4576),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6160),
                             IdAplicacao = 2L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 3L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4577),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6161),
                             IdAplicacao = 3L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 4L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4577),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6162),
                             IdAplicacao = 4L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 5L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4578),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6163),
                             IdAplicacao = 5L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 6L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4579),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6165),
                             IdAplicacao = 6L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 7L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4579),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6166),
                             IdAplicacao = 7L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 8L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4584),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6280),
                             IdAplicacao = 8L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 9L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4585),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6282),
                             IdAplicacao = 9L,
                             IdRole = 1L
                         },
                         new
                         {
                             Id = 25L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4585),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6284),
                             IdAplicacao = 10L,
                             IdRole = 1L
                         },
                         new
                         {
-                            Id = 29L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4586),
-                            IdAplicacao = 11L,
-                            IdRole = 1L
-                        },
-                        new
-                        {
                             Id = 10L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4587),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6285),
                             IdAplicacao = 1L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 11L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4587),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6287),
                             IdAplicacao = 2L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 12L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4588),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6288),
                             IdAplicacao = 4L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 13L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4589),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6290),
                             IdAplicacao = 5L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 14L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4589),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6291),
                             IdAplicacao = 6L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 15L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4590),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6292),
                             IdAplicacao = 7L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 16L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4591),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6294),
                             IdAplicacao = 8L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 26L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4591),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6295),
                             IdAplicacao = 11L,
                             IdRole = 2L
                         },
                         new
                         {
                             Id = 17L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4592),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6297),
                             IdAplicacao = 1L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 18L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4592),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6298),
                             IdAplicacao = 2L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 19L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4593),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6299),
                             IdAplicacao = 4L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 20L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4594),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6301),
                             IdAplicacao = 7L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 21L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4594),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6302),
                             IdAplicacao = 8L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 27L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4595),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6303),
                             IdAplicacao = 11L,
                             IdRole = 3L
                         },
                         new
                         {
                             Id = 22L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4596),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6305),
                             IdAplicacao = 1L,
                             IdRole = 4L
                         },
                         new
                         {
                             Id = 23L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4596),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6306),
                             IdAplicacao = 2L,
                             IdRole = 4L
                         },
                         new
                         {
                             Id = 24L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4597),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6307),
                             IdAplicacao = 8L,
                             IdRole = 4L
                         },
                         new
                         {
                             Id = 28L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 368, DateTimeKind.Utc).AddTicks(4597),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 312, DateTimeKind.Utc).AddTicks(6309),
                             IdAplicacao = 11L,
                             IdRole = 4L
                         });
@@ -908,11 +904,11 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 27, 53, 368, DateTimeKind.Local).AddTicks(4918),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 18, 35, 20, 312, DateTimeKind.Local).AddTicks(6838),
                             FlAtivo = true,
                             IdCargo = 1L,
                             Login = "admin",
-                            Senha = "$2a$11$BCrRwL/i0H6IRaDU.KBYF.OEgCZfX8wvt1/UXvIxODZY5J5wX2nuK"
+                            Senha = "$2a$11$4lcKKjQuzLOhmwgOfqGgj.5wjErCze5RPhPVxa6BLMzqQ41PSNqxa"
                         });
                 });
 
@@ -947,7 +943,7 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1L,
-                            DtUltimaAtualizacao = new DateTime(2026, 3, 5, 0, 27, 53, 748, DateTimeKind.Utc).AddTicks(5670),
+                            DtUltimaAtualizacao = new DateTime(2026, 3, 4, 21, 35, 20, 534, DateTimeKind.Utc).AddTicks(3654),
                             IdArea = 1L,
                             IdUsuario = 1L
                         });

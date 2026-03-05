@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft, UserCircle, Briefcase, MapPin, Building2, BarChart3, Key, Mail, Fingerprint, Phone } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft, UserCircle, Briefcase, MapPin, Building2, BarChart3, Key, Mail, Fingerprint, Phone, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -24,6 +24,7 @@ const iconMap: Record<string, any> = {
   "Gerenciamento de Cargo": <Briefcase size={20} />,
   "Gerenciamento de Área": <MapPin size={20} />,
   "Gerenciamento de Usuário": <Users size={20} />,
+  "Gerenciamento de Lançamentos": <TrendingUp size={20} />,
   "Relatórios": <BarChart3 size={20} />,
   "Configurações": <Settings size={20} />,
 };
@@ -36,6 +37,7 @@ const routeMap: Record<string, string> = {
   "Gerenciamento de Cargo": "/cargos",
   "Gerenciamento de Área": "/areas",
   "Gerenciamento de Usuário": "/users",
+  "Gerenciamento de Lançamentos": "/lancamentos",
   "Relatórios": "/reports",
   "Configurações": "/settings",
 };
@@ -48,6 +50,7 @@ const menuOrder = [
   "Gerenciamento de Cargo",
   "Gerenciamento de Área",
   "Gerenciamento de Usuário",
+  "Gerenciamento de Lançamentos",
   "Relatórios",
   "Configurações"
 ];
@@ -107,17 +110,20 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
       }
       if (isNotificationOpen && !event.target.closest('.notification-container')) {
         setNotificationOpen(false);
+        if (notificacoes && notificacoes.length > 0) {
+          api.post('/notification/ler-todas').then(() => refetchNotificacoes()).catch(e => console.error(e));
+        }
       }
     };
     window.addEventListener('mousedown', handleClickOutside);
     return () => window.removeEventListener('mousedown', handleClickOutside);
-  }, [isUserMenuOpen]);
+  }, [isUserMenuOpen, isNotificationOpen, notificacoes]);
 
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex transition-colors duration-500 font-sans">
       {/* Sidebar */}
-      <aside 
+      <aside
         className={cn(
           "relative h-screen bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 ease-in-out z-20 flex flex-col shadow-xl dark:shadow-none",
           isSidebarOpen ? "w-72" : "w-20"
@@ -141,7 +147,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
               </motion.div>
             )}
           </AnimatePresence>
-          <button 
+          <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
             className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-colors text-neutral-500"
           >
@@ -157,18 +163,18 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
               return name;
             })
           ]
-          .filter((name, index, self) => self.indexOf(name) === index) // Unique
-          .sort((a, b) => menuOrder.indexOf(a) - menuOrder.indexOf(b)) // Follow user order
-          .map(appName => (
-            <SidebarItem 
-              key={appName}
-              icon={iconMap[appName] || <LayoutDashboard size={20} />} 
-              label={appName} 
-              to={routeMap[appName] || "/"} 
-              isOpen={isSidebarOpen} 
-              active={location.pathname === routeMap[appName]}
-            />
-          ))}
+            .filter((name, index, self) => self.indexOf(name) === index) // Unique
+            .sort((a, b) => menuOrder.indexOf(a) - menuOrder.indexOf(b)) // Follow user order
+            .map(appName => (
+              <SidebarItem
+                key={appName}
+                icon={iconMap[appName] || <LayoutDashboard size={20} />}
+                label={appName}
+                to={routeMap[appName] || "/"}
+                isOpen={isSidebarOpen}
+                active={location.pathname === routeMap[appName]}
+              />
+            ))}
           {isLoading && (
             <div className="flex justify-center py-10">
               <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -187,17 +193,24 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
             </h2>
             <span className="text-xs text-neutral-400 font-medium">Bem-vindo de volta, Administrador</span>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="relative notification-container">
               <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1.5 rounded-full border border-neutral-200 dark:border-neutral-700">
-                 <button 
-                  onClick={() => setNotificationOpen(!isNotificationOpen)}
+                <button
+                  onClick={() => {
+                    if (isNotificationOpen && notificacoes && notificacoes.length > 0) {
+                      api.post('/notification/ler-todas').then(() => refetchNotificacoes()).catch(e => console.error(e));
+                    }
+                    setNotificationOpen(!isNotificationOpen);
+                  }}
                   className="p-2 hover:bg-white dark:hover:bg-neutral-700 rounded-full transition-all text-neutral-400 relative"
-                 >
+                >
                   <Bell size={18} />
                   {notificacoes && notificacoes.length > 0 && (
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-white dark:border-neutral-800 animate-pulse"></span>
+                    <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-blue-500 rounded-full border border-white dark:border-neutral-800 flex items-center justify-center text-[9px] font-bold text-white shadow-sm">
+                      {notificacoes.length > 9 ? '9+' : notificacoes.length}
+                    </span>
                   )}
                 </button>
               </div>
@@ -214,7 +227,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                       <p className="text-sm font-black text-neutral-900 dark:text-neutral-100">Notificações</p>
                       <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">{notificacoes?.length || 0} novas</span>
                     </div>
-                    
+
                     <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                       {notificacoes && notificacoes.length > 0 ? (
                         notificacoes.map((notif: any) => (
@@ -223,11 +236,11 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                               <div className="flex-1">
                                 <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">{notif.titulo}</p>
                                 <p className="text-xs text-neutral-500 mt-1 leading-relaxed">{notif.mensagem}</p>
-                                <span className="text-[10px] font-semibold text-neutral-400 mt-2 block">{new Date(notif.dtUltimaAtualizacao).toLocaleDateString('pt-BR')} às {new Date(notif.dtUltimaAtualizacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute:'2-digit' })}</span>
+                                <span className="text-[10px] font-semibold text-neutral-400 mt-2 block">{new Date(notif.dtUltimaAtualizacao).toLocaleDateString('pt-BR')} às {new Date(notif.dtUltimaAtualizacao).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                             </div>
                             <div className="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button 
+                              <button
                                 onClick={() => markAsRead(notif.id)}
                                 className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 px-3 py-1.5 rounded-lg transition-colors"
                               >
@@ -248,12 +261,12 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                 )}
               </AnimatePresence>
             </div>
-            
+
             <div className="h-8 w-[px] bg-neutral-200 dark:bg-neutral-800"></div>
 
             {/* Profile Dropdown */}
             <div className="relative user-menu-container">
-              <button 
+              <button
                 onClick={() => setUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center gap-3 group cursor-pointer p-1 rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 id="user-menu-button"
@@ -276,28 +289,28 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                     className="absolute right-0 mt-3 w-64 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xl p-2 z-50 overflow-hidden"
                   >
                     <div className="px-4 py-3 mb-2 border-b border-neutral-100 dark:border-neutral-800">
-                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Perfil e Ações</p>
-                        {userProfile && (
-                            <div className="mt-2 space-y-1">
-                                <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
-                                    <Mail size={12} />
-                                    <span className="truncate">{userProfile.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
-                                    <Fingerprint size={12} />
-                                    <span>{userProfile.cpf}</span>
-                                </div>
-                                {userProfile.telefone && (
-                                    <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
-                                        <Phone size={12} />
-                                        <span>{userProfile.telefone}</span>
-                                    </div>
-                                )}
+                      <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-1">Perfil e Ações</p>
+                      {userProfile && (
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
+                            <Mail size={12} />
+                            <span className="truncate">{userProfile.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
+                            <Fingerprint size={12} />
+                            <span>{userProfile.cpf}</span>
+                          </div>
+                          {userProfile.telefone && (
+                            <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-medium">
+                              <Phone size={12} />
+                              <span>{userProfile.telefone}</span>
                             </div>
-                        )}
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => { setChangePasswordOpen(true); setUserMenuOpen(false); }}
                       className="w-full flex items-center gap-3 p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl transition-all group"
                     >
@@ -310,7 +323,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                       </div>
                     </button>
 
-                    <button 
+                    <button
                       onClick={() => { toggleTheme(); setUserMenuOpen(false); }}
                       className="w-full flex items-center gap-3 p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl transition-all group"
                     >
@@ -328,7 +341,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
 
                     <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-2 mx-2"></div>
 
-                    <button 
+                    <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 p-3 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 rounded-xl transition-all group"
                     >
@@ -348,9 +361,9 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
         </header>
 
         <AnimatePresence>
-            {isChangePasswordOpen && (
-                <ChangePasswordModal onClose={() => setChangePasswordOpen(false)} />
-            )}
+          {isChangePasswordOpen && (
+            <ChangePasswordModal onClose={() => setChangePasswordOpen(false)} />
+          )}
         </AnimatePresence>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-neutral-50 dark:bg-neutral-950 custom-scrollbar w-full">
@@ -365,12 +378,12 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
 
 function SidebarItem({ icon, label, to, isOpen, active }: { icon: any; label: string; to: string; isOpen: boolean; active?: boolean }) {
   return (
-    <Link 
-      to={to} 
+    <Link
+      to={to}
       className={cn(
         "flex items-center p-3 rounded-xl transition-all duration-300 group relative",
-        active 
-          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" 
+        active
+          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
           : "text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100"
       )}
     >
@@ -379,7 +392,7 @@ function SidebarItem({ icon, label, to, isOpen, active }: { icon: any; label: st
       </div>
       <AnimatePresence>
         {isOpen && (
-          <motion.span 
+          <motion.span
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="ml-3 font-semibold text-sm whitespace-nowrap"
@@ -389,7 +402,7 @@ function SidebarItem({ icon, label, to, isOpen, active }: { icon: any; label: st
         )}
       </AnimatePresence>
       {active && (
-        <motion.div 
+        <motion.div
           layoutId="sidebar-active"
           className="absolute left-[-1rem] w-1.5 h-6 bg-blue-600 rounded-r-full"
         />
@@ -419,46 +432,46 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
         className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800"
       >
         <div className="p-8 border-b border-neutral-100 dark:border-neutral-800/50 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white">
-                    <Key size={24} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-bold">Alterar Senha</h3>
-                    <p className="text-xs text-neutral-500 font-medium">Atualize suas credenciais de acesso</p>
-                </div>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white">
+              <Key size={24} />
             </div>
+            <div>
+              <h3 className="text-xl font-bold">Alterar Senha</h3>
+              <p className="text-xs text-neutral-500 font-medium">Atualize suas credenciais de acesso</p>
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Senha Atual</label>
-                <input 
-                    type="password" required autoFocus value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)}
-                    className="w-full px-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 font-bold"
-                    placeholder="••••••••"
-                />
-            </div>
-            <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Nova Senha</label>
-                <input 
-                    type="password" required value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
-                    className="w-full px-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 font-bold"
-                    placeholder="••••••••"
-                />
-            </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Senha Atual</label>
+            <input
+              type="password" required autoFocus value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)}
+              className="w-full px-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 font-bold"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 ml-1">Nova Senha</label>
+            <input
+              type="password" required value={novaSenha} onChange={e => setNovaSenha(e.target.value)}
+              className="w-full px-4 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 font-bold"
+              placeholder="••••••••"
+            />
+          </div>
 
-            <div className="flex gap-3 pt-2">
-                <button type="button" onClick={onClose} className="flex-1 py-4 bg-neutral-100 dark:bg-neutral-800 rounded-2xl font-bold transition-all hover:bg-neutral-200">Cancelar</button>
-                <button type="submit" disabled={isPending} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 transition-all">
-                    {isPending ? 'Salvando...' : 'Alterar Senha'}
-                </button>
-            </div>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 py-4 bg-neutral-100 dark:bg-neutral-800 rounded-2xl font-bold transition-all hover:bg-neutral-200">Cancelar</button>
+            <button type="submit" disabled={isPending} className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 transition-all">
+              {isPending ? 'Salvando...' : 'Alterar Senha'}
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>
