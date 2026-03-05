@@ -23,6 +23,10 @@ namespace backend.Data
         public DbSet<Notificacao> Notificacoes { get; set; }
         public DbSet<ModeloControle> ModelosControles { get; set; }
         public DbSet<ClienteModeloControle> ClientesModelosControles { get; set; }
+        public DbSet<Lancamento> Lancamentos { get; set; }
+        public DbSet<LancamentoVarejo> LancamentosVarejo { get; set; }
+        public DbSet<LancamentoCadastro> LancamentosCadastro { get; set; }
+        public DbSet<LancamentoSaude> LancamentosSaude { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -234,6 +238,28 @@ namespace backend.Data
                     .HasForeignKey(d => d.IdArea);
             });
 
+            // Lancamento (TPT Strategy)
+            modelBuilder.Entity<Lancamento>(entity =>
+            {
+                entity.ToTable("lancamento");
+                entity.Property(e => e.DataLancamento).HasDefaultValueSql("now()");
+                
+                // Set TPT mapping using UseTptMappingStrategy, or just rely on ToTable on derived classes
+                // In EF Core, if derived classes have ToTable, it's TPT automatically.
+            });
+
+            modelBuilder.Entity<LancamentoVarejo>()
+                .ToTable("lancamento_varejo")
+                .HasBaseType<Lancamento>();
+
+            modelBuilder.Entity<LancamentoCadastro>()
+                .ToTable("lancamento_cadastro")
+                .HasBaseType<Lancamento>();
+
+            modelBuilder.Entity<LancamentoSaude>()
+                .ToTable("lancamento_saude")
+                .HasBaseType<Lancamento>();
+
             SeedData(modelBuilder);
         }
 
@@ -257,7 +283,8 @@ namespace backend.Data
                 new Aplicacao { Id = 7, Nome = "Gerenciamento de Usuário" },
                 new Aplicacao { Id = 8, Nome = "Relatórios" },
                 new Aplicacao { Id = 9, Nome = "Configurações" },
-                new Aplicacao { Id = 10, Nome = "Gerenciamento de Modelo de Controle" }
+                new Aplicacao { Id = 10, Nome = "Gerenciamento de Modelo de Controle" },
+                new Aplicacao { Id = 11, Nome = "Gerenciamento de Lançamentos" }
             );
 
             // ModeloControle Seed
@@ -279,8 +306,9 @@ namespace backend.Data
                 new RoleAplicacao { Id = 8, IdRole = 1, IdAplicacao = 8 },
                 new RoleAplicacao { Id = 9, IdRole = 1, IdAplicacao = 9 },
                 new RoleAplicacao { Id = 25, IdRole = 1, IdAplicacao = 10 },
+                new RoleAplicacao { Id = 29, IdRole = 1, IdAplicacao = 11 },
                 
-                // Proprietário: Página Inicial(1), Dashboard(2), Pessoa(4), Cargo(5), Área(6), Usuário(7), Relatórios(8)
+                // Proprietário: Página Inicial(1), Dashboard(2), Pessoa(4), Cargo(5), Área(6), Usuário(7), Relatórios(8), Lançamentos(11)
                 new RoleAplicacao { Id = 10, IdRole = 2, IdAplicacao = 1 },
                 new RoleAplicacao { Id = 11, IdRole = 2, IdAplicacao = 2 },
                 new RoleAplicacao { Id = 12, IdRole = 2, IdAplicacao = 4 },
@@ -288,18 +316,21 @@ namespace backend.Data
                 new RoleAplicacao { Id = 14, IdRole = 2, IdAplicacao = 6 },
                 new RoleAplicacao { Id = 15, IdRole = 2, IdAplicacao = 7 },
                 new RoleAplicacao { Id = 16, IdRole = 2, IdAplicacao = 8 },
+                new RoleAplicacao { Id = 26, IdRole = 2, IdAplicacao = 11 },
                 
-                // Supervisor: Página Inicial(1), Dashboard(2), Pessoa(4), Usuário(7), Relatórios(8)
+                // Supervisor: Página Inicial(1), Dashboard(2), Pessoa(4), Usuário(7), Relatórios(8), Lançamentos(11)
                 new RoleAplicacao { Id = 17, IdRole = 3, IdAplicacao = 1 },
                 new RoleAplicacao { Id = 18, IdRole = 3, IdAplicacao = 2 },
                 new RoleAplicacao { Id = 19, IdRole = 3, IdAplicacao = 4 },
                 new RoleAplicacao { Id = 20, IdRole = 3, IdAplicacao = 7 },
                 new RoleAplicacao { Id = 21, IdRole = 3, IdAplicacao = 8 },
+                new RoleAplicacao { Id = 27, IdRole = 3, IdAplicacao = 11 },
                 
-                // Vendedor: Página Inicial(1), Dashboard(2), Relatórios(8)
+                // Vendedor: Página Inicial(1), Dashboard(2), Relatórios(8), Lançamentos(11)
                 new RoleAplicacao { Id = 22, IdRole = 4, IdAplicacao = 1 },
                 new RoleAplicacao { Id = 23, IdRole = 4, IdAplicacao = 2 },
-                new RoleAplicacao { Id = 24, IdRole = 4, IdAplicacao = 8 }
+                new RoleAplicacao { Id = 24, IdRole = 4, IdAplicacao = 8 },
+                new RoleAplicacao { Id = 28, IdRole = 4, IdAplicacao = 11 }
             );
 
             modelBuilder.Entity<Cliente>().HasData(
