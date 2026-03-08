@@ -10,6 +10,10 @@ import AreasPage from './pages/AreasPage';
 import LancamentosPage from './pages/LancamentosPage.tsx';
 import InvestimentosPage from './pages/InvestimentosPage';
 import ReportsPage from './pages/ReportsPage';
+import DashboardHub from './pages/DashboardHub';
+import VarejoDashboard from './pages/VarejoDashboard';
+import SaudeDashboard from './pages/SaudeDashboard';
+import CadastroDashboard from './pages/CadastroDashboard';
 import HomePage from './pages/HomePage';
 import { useEffect, useState } from 'react';
 
@@ -66,7 +70,10 @@ function App() {
             <Route path="lancamentos" element={<LancamentosPage />} />
             <Route path="investimentos" element={<InvestimentosPage />} />
             <Route path="reports" element={<ReportsPage />} />
-            <Route path="dashboard" element={<div>Dashboard Placeholder</div>} />
+            <Route path="dashboard" element={<DashboardHub />} />
+            <Route path="dashboard/varejo" element={<VarejoDashboard />} />
+            <Route path="dashboard/saude" element={<SaudeDashboard />} />
+            <Route path="dashboard/cadastro" element={<CadastroDashboard />} />
             <Route path="notifications" element={<div>Notifications Placeholder</div>} />
             <Route path="settings" element={<div>Settings Placeholder</div>} />
           </Route>

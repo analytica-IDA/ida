@@ -32,7 +32,10 @@ namespace backend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("ida");
+            if (Database.ProviderName != "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                modelBuilder.HasDefaultSchema("ida");
+            }
 
             // Notificacao
             modelBuilder.Entity<Notificacao>(entity =>

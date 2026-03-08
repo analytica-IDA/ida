@@ -47,7 +47,7 @@ namespace backend.Controllers
             
             await _auditService.LogAction(user.Login, "LOGIN", "usuario", "", "Login realizado com sucesso");
 
-            return Ok(new { token, user = new { user.Login, role = user.Cargo?.Role?.Nome } });
+            return Ok(new { token, user = new { user.Login, role = user.Cargo?.Role?.Nome, idCliente = user.Pessoa?.IdCliente } });
         }
 
         [Authorize]

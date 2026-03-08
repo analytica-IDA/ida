@@ -68,11 +68,15 @@ if (app.Environment.IsDevelopment())
 }
 
 // Seed Database
-using (var scope = app.Services.CreateScope())
+var environmentName = app.Environment.EnvironmentName;
+if (environmentName != "Testing" && environmentName != "test")
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    backend.Data.Seeders.DbSeeder.Seed(context);
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<AppDbContext>();
+        backend.Data.Seeders.DbSeeder.Seed(context);
+    }
 }
 
 app.UseHttpsRedirection();

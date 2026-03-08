@@ -175,7 +175,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
                 label={appName}
                 to={routeMap[appName] || "/"}
                 isOpen={isSidebarOpen}
-                active={location.pathname === routeMap[appName]}
+                active={location.pathname === routeMap[appName] || (appName === "Dashboard" && location.pathname.startsWith("/dashboard"))}
               />
             ))}
           {isLoading && (

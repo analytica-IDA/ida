@@ -41,14 +41,13 @@ namespace backend.Tests
                             .Build();
                     });
 
-                    // Ensure the database is created and seeded
+                    // Ensure the database is created and seeded (via HasData)
                     var sp = services.BuildServiceProvider();
                     using (var scope = sp.CreateScope())
                     {
                         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                         db.Database.EnsureDeleted();
                         db.Database.EnsureCreated();
-                        backend.Data.Seeders.DbSeeder.Seed(db);
                     }
                 });
             });
