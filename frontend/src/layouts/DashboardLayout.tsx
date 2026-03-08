@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft, UserCircle, Briefcase, MapPin, Building2, BarChart3, Key, Mail, Fingerprint, Phone, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut, Sun, Moon, Menu, Bell, ChevronLeft, UserCircle, Briefcase, MapPin, Building2, BarChart3, Key, Mail, Fingerprint, Phone, TrendingUp, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
@@ -25,6 +25,7 @@ const iconMap: Record<string, any> = {
   "Gerenciamento de Área": <MapPin size={20} />,
   "Gerenciamento de Usuário": <Users size={20} />,
   "Gerenciamento de Lançamentos": <TrendingUp size={20} />,
+  "Gerenciamento de Investimentos": <Wallet size={20} />,
   "Relatórios": <BarChart3 size={20} />,
   "Configurações": <Settings size={20} />,
 };
@@ -38,6 +39,7 @@ const routeMap: Record<string, string> = {
   "Gerenciamento de Área": "/areas",
   "Gerenciamento de Usuário": "/users",
   "Gerenciamento de Lançamentos": "/lancamentos",
+  "Gerenciamento de Investimentos": "/investimentos",
   "Relatórios": "/reports",
   "Configurações": "/settings",
 };
@@ -51,6 +53,7 @@ const menuOrder = [
   "Gerenciamento de Área",
   "Gerenciamento de Usuário",
   "Gerenciamento de Lançamentos",
+  "Gerenciamento de Investimentos",
   "Relatórios",
   "Configurações"
 ];
@@ -126,7 +129,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
       <aside
         className={cn(
           "relative h-screen bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 transition-all duration-300 ease-in-out z-20 flex flex-col shadow-xl dark:shadow-none",
-          isSidebarOpen ? "w-72" : "w-20"
+          isSidebarOpen ? "w-80" : "w-20"
         )}
       >
         <div className="h-20 flex items-center justify-between px-6 border-b border-neutral-100 dark:border-neutral-800/50">
@@ -155,7 +158,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
           {!isLoading && [
             ...(menuItems || []).map(name => {
               if (name === "Gestão de Usuários") return "Gerenciamento de Usuário";
@@ -163,7 +166,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
               return name;
             })
           ]
-            .filter((name, index, self) => self.indexOf(name) === index) // Unique
+            .filter((name, index, self) => self.indexOf(name) === index && name !== "Gerenciamento de Modelo de Controle") // Unique & Filtered
             .sort((a, b) => menuOrder.indexOf(a) - menuOrder.indexOf(b)) // Follow user order
             .map(appName => (
               <SidebarItem

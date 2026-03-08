@@ -27,6 +27,8 @@ namespace backend.Data
         public DbSet<LancamentoVarejo> LancamentosVarejo { get; set; }
         public DbSet<LancamentoCadastro> LancamentosCadastro { get; set; }
         public DbSet<LancamentoSaude> LancamentosSaude { get; set; }
+        public DbSet<ClienteInvestimentoMeta> ClientesInvestimentosMeta { get; set; }
+        public DbSet<ClienteInvestimentoGoogle> ClientesInvestimentosGoogle { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -260,6 +262,30 @@ namespace backend.Data
                 .ToTable("lancamento_saude")
                 .HasBaseType<Lancamento>();
 
+            // ClienteInvestimentoMeta
+            modelBuilder.Entity<ClienteInvestimentoMeta>(entity =>
+            {
+                entity.ToTable("cliente_investimento_meta");
+                entity.Property(e => e.VlrInvestimentoMeta).HasPrecision(38, 2).HasDefaultValue(0);
+                entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+
+                entity.HasOne(d => d.Cliente)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdCliente);
+            });
+
+            // ClienteInvestimentoGoogle
+            modelBuilder.Entity<ClienteInvestimentoGoogle>(entity =>
+            {
+                entity.ToTable("cliente_investimento_google");
+                entity.Property(e => e.VlrInvestimentoGoogle).HasPrecision(38, 2).HasDefaultValue(0);
+                entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+
+                entity.HasOne(d => d.Cliente)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdCliente);
+            });
+
             SeedData(modelBuilder);
         }
 
@@ -284,7 +310,8 @@ namespace backend.Data
                 new Aplicacao { Id = 8, Nome = "Relatórios" },
                 new Aplicacao { Id = 9, Nome = "Configurações" },
                 new Aplicacao { Id = 10, Nome = "Gerenciamento de Modelo de Controle" },
-                new Aplicacao { Id = 11, Nome = "Gerenciamento de Lançamentos" }
+                new Aplicacao { Id = 11, Nome = "Gerenciamento de Lançamentos" },
+                new Aplicacao { Id = 12, Nome = "Gerenciamento de Investimentos" }
             );
 
             // ModeloControle Seed
@@ -307,6 +334,7 @@ namespace backend.Data
                 new RoleAplicacao { Id = 9, IdRole = 1, IdAplicacao = 9 },
                 new RoleAplicacao { Id = 25, IdRole = 1, IdAplicacao = 10 },
                 new RoleAplicacao { Id = 29, IdRole = 1, IdAplicacao = 11 },
+                new RoleAplicacao { Id = 30, IdRole = 1, IdAplicacao = 12 },
                 
                 // Proprietário: Página Inicial(1), Dashboard(2), Pessoa(4), Cargo(5), Área(6), Usuário(7), Relatórios(8), Lançamentos(11)
                 new RoleAplicacao { Id = 10, IdRole = 2, IdAplicacao = 1 },

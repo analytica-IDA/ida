@@ -117,6 +117,33 @@ namespace backend.Controllers
             dto.IdUsuario = userId;
             dto.IdModeloControle = 2; // Varejo
             
+            // Link current investment if not provided
+            if (dto.IdClienteInvestimentoMeta == null || dto.IdClienteInvestimentoMeta == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var meta = await _context.ClientesInvestimentosMeta
+                        .Where(m => m.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(m => m.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoMeta = meta?.Id;
+                }
+            }
+
+            if (dto.IdClienteInvestimentoGoogle == null || dto.IdClienteInvestimentoGoogle == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var google = await _context.ClientesInvestimentosGoogle
+                        .Where(g => g.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(g => g.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoGoogle = google?.Id;
+                }
+            }
+            
             _context.LancamentosVarejo.Add(dto);
             await _context.SaveChangesAsync();
 
@@ -171,6 +198,33 @@ namespace backend.Controllers
             var userId = GetCurrentUserId();
             dto.IdUsuario = userId;
             dto.IdModeloControle = 1; // Cadastro
+
+            // Link current investment if not provided
+            if (dto.IdClienteInvestimentoMeta == null || dto.IdClienteInvestimentoMeta == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var meta = await _context.ClientesInvestimentosMeta
+                        .Where(m => m.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(m => m.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoMeta = meta?.Id;
+                }
+            }
+
+            if (dto.IdClienteInvestimentoGoogle == null || dto.IdClienteInvestimentoGoogle == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var google = await _context.ClientesInvestimentosGoogle
+                        .Where(g => g.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(g => g.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoGoogle = google?.Id;
+                }
+            }
             
             _context.LancamentosCadastro.Add(dto);
             await _context.SaveChangesAsync();
@@ -186,6 +240,33 @@ namespace backend.Controllers
             var userId = GetCurrentUserId();
             dto.IdUsuario = userId;
             dto.IdModeloControle = 3; // Saude
+
+            // Link current investment if not provided
+            if (dto.IdClienteInvestimentoMeta == null || dto.IdClienteInvestimentoMeta == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var meta = await _context.ClientesInvestimentosMeta
+                        .Where(m => m.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(m => m.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoMeta = meta?.Id;
+                }
+            }
+
+            if (dto.IdClienteInvestimentoGoogle == null || dto.IdClienteInvestimentoGoogle == 0)
+            {
+                var user = await _context.Usuarios.Include(u => u.Pessoa).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.Pessoa != null)
+                {
+                    var google = await _context.ClientesInvestimentosGoogle
+                        .Where(g => g.IdCliente == user.Pessoa.IdCliente)
+                        .OrderByDescending(g => g.DtUltimaAtualizacao)
+                        .FirstOrDefaultAsync();
+                    dto.IdClienteInvestimentoGoogle = google?.Id;
+                }
+            }
             
             _context.LancamentosSaude.Add(dto);
             await _context.SaveChangesAsync();
@@ -211,8 +292,8 @@ namespace backend.Controllers
             lancamento.QtdFacebook = dto.QtdFacebook;
             lancamento.QtdGoogle = dto.QtdGoogle;
             lancamento.QtdIndicacao = dto.QtdIndicacao;
-            lancamento.VlrInvestimentoMeta = dto.VlrInvestimentoMeta;
-            lancamento.VlrInvestimentoGoogle = dto.VlrInvestimentoGoogle;
+            lancamento.IdClienteInvestimentoMeta = dto.IdClienteInvestimentoMeta;
+            lancamento.IdClienteInvestimentoGoogle = dto.IdClienteInvestimentoGoogle;
 
             _context.LancamentosVarejo.Update(lancamento);
             await _context.SaveChangesAsync();
@@ -229,8 +310,8 @@ namespace backend.Controllers
             lancamento.QtdClickLink = dto.QtdClickLink;
             lancamento.QtdCadastros = dto.QtdCadastros;
             lancamento.VlrTicketMedio = dto.VlrTicketMedio;
-            lancamento.VlrInvestimentoMeta = dto.VlrInvestimentoMeta;
-            lancamento.VlrInvestimentoGoogle = dto.VlrInvestimentoGoogle;
+            lancamento.IdClienteInvestimentoMeta = dto.IdClienteInvestimentoMeta;
+            lancamento.IdClienteInvestimentoGoogle = dto.IdClienteInvestimentoGoogle;
 
             _context.LancamentosCadastro.Update(lancamento);
             await _context.SaveChangesAsync();
@@ -251,8 +332,8 @@ namespace backend.Controllers
             lancamento.VlrTicketMedioConsultas = dto.VlrTicketMedioConsultas;
             lancamento.QtdEntradaRedesSociais = dto.QtdEntradaRedesSociais;
             lancamento.QtdEntradaGoogle = dto.QtdEntradaGoogle;
-            lancamento.VlrInvestimentoMeta = dto.VlrInvestimentoMeta;
-            lancamento.VlrInvestimentoGoogle = dto.VlrInvestimentoGoogle;
+            lancamento.IdClienteInvestimentoMeta = dto.IdClienteInvestimentoMeta;
+            lancamento.IdClienteInvestimentoGoogle = dto.IdClienteInvestimentoGoogle;
 
             _context.LancamentosSaude.Update(lancamento);
             await _context.SaveChangesAsync();

@@ -19,12 +19,16 @@ namespace backend.Models
         [Column("vlr_ticket_medio", TypeName = "numeric(38,2)")]
         public decimal VlrTicketMedio { get; set; }
 
-        [Required]
-        [Column("vlr_investimento_meta", TypeName = "numeric(38,2)")]
-        public decimal VlrInvestimentoMeta { get; set; } = 0;
+        [Column("id_cliente_investimento_meta")]
+        public long? IdClienteInvestimentoMeta { get; set; }
 
-        [Required]
-        [Column("vlr_investimento_google", TypeName = "numeric(38,2)")]
-        public decimal VlrInvestimentoGoogle { get; set; } = 0;
+        [ForeignKey("IdClienteInvestimentoMeta")]
+        public ClienteInvestimentoMeta? ClienteInvestimentoMeta { get; set; }
+
+        [Column("id_cliente_investimento_google")]
+        public long? IdClienteInvestimentoGoogle { get; set; }
+
+        [ForeignKey("IdClienteInvestimentoGoogle")]
+        public ClienteInvestimentoGoogle? ClienteInvestimentoGoogle { get; set; }
     }
 }

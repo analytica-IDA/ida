@@ -8,6 +8,8 @@ import ClientesPage from './pages/ClientesPage';
 import CargosPage from './pages/CargosPage';
 import AreasPage from './pages/AreasPage';
 import LancamentosPage from './pages/LancamentosPage.tsx';
+import InvestimentosPage from './pages/InvestimentosPage';
+import ReportsPage from './pages/ReportsPage';
 import HomePage from './pages/HomePage';
 import { useEffect, useState } from 'react';
 
@@ -62,6 +64,8 @@ function App() {
             <Route path="cargos" element={<CargosPage />} />
             <Route path="areas" element={<AreasPage />} />
             <Route path="lancamentos" element={<LancamentosPage />} />
+            <Route path="investimentos" element={<InvestimentosPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             <Route path="dashboard" element={<div>Dashboard Placeholder</div>} />
             <Route path="notifications" element={<div>Notifications Placeholder</div>} />
             <Route path="settings" element={<div>Settings Placeholder</div>} />

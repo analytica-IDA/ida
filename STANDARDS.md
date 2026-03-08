@@ -19,3 +19,8 @@ Para manter a integridade e qualidade do projeto, todos os desenvolvedores (incl
     - **Status**: Sucesso: Emerald-600, Erro: Red-600, Alerta: Amber-600.
     - **Restrição**: Evitar o uso de cores vibrantes variadas (roxo, rosa, índigo) para manter a sobriedade.
 12. **Não mexer em nada no docker diretamente, dropar base, de maneira alguma**.
+13. **Estratégia de Testes**:
+    - **Backend**: Utilizar `xUnit`, `Moq` e `FluentAssertions`. Os testes devem ser divididos em projetos de `Unit` e `Integration`.
+    - **Frontend**: Utilizar `Vitest` e `React Testing Library` para componentes. `Playwright` para testes de fim-a-fim (E2E).
+    - **Cobertura**: Novas funcionalidades críticas (cálculos e fluxos de acesso) devem obrigatoriamente acompanhar testes.
+    - **Massa de Dados**: Utilizar o `SeedData` do projeto como base para testes de integração, garantindo que o ambiente de teste seja idêntico ao de desenvolvimento.

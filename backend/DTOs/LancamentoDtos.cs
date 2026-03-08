@@ -15,8 +15,8 @@ namespace backend.DTOs
         [Required] public long QtdFacebook { get; set; }
         [Required] public long QtdGoogle { get; set; }
         [Required] public long QtdIndicacao { get; set; }
-        public decimal VlrInvestimentoMeta { get; set; } = 0;
-        public decimal VlrInvestimentoGoogle { get; set; } = 0;
+        public long? IdClienteInvestimentoMeta { get; set; }
+        public long? IdClienteInvestimentoGoogle { get; set; }
     }
 
     public class LancamentoCadastroDto
@@ -27,8 +27,8 @@ namespace backend.DTOs
         [Required] public long QtdClickLink { get; set; }
         [Required] public long QtdCadastros { get; set; }
         [Required] public decimal VlrTicketMedio { get; set; }
-        public decimal VlrInvestimentoMeta { get; set; } = 0;
-        public decimal VlrInvestimentoGoogle { get; set; } = 0;
+        public long? IdClienteInvestimentoMeta { get; set; }
+        public long? IdClienteInvestimentoGoogle { get; set; }
     }
 
     public class LancamentoSaudeDto
@@ -43,7 +43,7 @@ namespace backend.DTOs
         public decimal? VlrTicketMedioConsultas { get; set; }
         [Required] public long QtdEntradaRedesSociais { get; set; }
         [Required] public long QtdEntradaGoogle { get; set; }
-        public decimal? VlrInvestimentoMeta { get; set; }
-        public decimal? VlrInvestimentoGoogle { get; set; }
+        public long? IdClienteInvestimentoMeta { get; set; }
+        public long? IdClienteInvestimentoGoogle { get; set; }
     }
 }

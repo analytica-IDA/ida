@@ -1,1 +1,0 @@
-﻿TRUNCATE TABLE ida.cliente_usuario, ida.usuario_area, ida.usuario, ida.pessoa, ida.cliente_cargo, ida.cargo_area, ida.cargo, ida.area, ida.cliente_modelo_controle, ida.cliente RESTART IDENTITY CASCADE;

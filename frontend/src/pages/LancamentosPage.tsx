@@ -368,13 +368,14 @@ export default function LancamentosPage() {
 
 // Sub-Componentes para Modal de Criação
 
-const InputField = ({ label, name, type = "number", required = true, value, onChange, placeholder }: any) => (
+const InputField = ({ label, name, type = "number", required = true, value, onChange, placeholder, disabled = false }: any) => (
     <div className="space-y-1.5 flex-1 min-w-[200px]">
         <label className="text-[11px] font-black uppercase tracking-widest text-neutral-500 ml-1">{label}</label>
         <input
             type={type} required={required} name={name} step={type === "number" ? "any" : undefined}
             value={value || ''} onChange={onChange} placeholder={placeholder}
-            className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/30 font-bold transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+            disabled={disabled}
+            className={`w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/30 font-bold transition-all placeholder:text-neutral-400 dark:placeholder:text-neutral-600 ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
         />
     </div>
 );
@@ -388,13 +389,35 @@ function LancamentoModal({ onClose, idCliente, idModeloControle, onSuccess, item
     const [formData, setFormData] = useState<any>({ dataLancamento: new Date().toISOString().split('T')[0] });
 
     useEffect(() => {
-        if (item) {
-            const dateStr = item.dataLancamento ? item.dataLancamento.split('T')[0] : '';
-            setFormData({ ...item, dataLancamento: dateStr });
-        } else {
-            setFormData({ dataLancamento: new Date().toISOString().split('T')[0] });
-        }
-    }, [item]);
+        const fetchInvestments = async () => {
+            if (item) {
+                const dateStr = item.dataLancamento ? item.dataLancamento.split('T')[0] : '';
+                setFormData({
+                    ...item,
+                    dataLancamento: dateStr,
+                    vlrInvestimentoMetaReadOnly: item.clienteInvestimentoMeta?.vlrInvestimentoMeta || 0,
+                    vlrInvestimentoGoogleReadOnly: item.clienteInvestimentoGoogle?.vlrInvestimentoGoogle || 0
+                });
+            } else {
+                try {
+                    const [metaRes, googleRes] = await Promise.all([
+                        api.get(`/ClienteInvestimentoMeta/cliente/${idCliente}`),
+                        api.get(`/ClienteInvestimentoGoogle/cliente/${idCliente}`)
+                    ]);
+                    setFormData({
+                        dataLancamento: new Date().toISOString().split('T')[0],
+                        idClienteInvestimentoMeta: metaRes.data?.id || null,
+                        idClienteInvestimentoGoogle: googleRes.data?.id || null,
+                        vlrInvestimentoMetaReadOnly: metaRes.data?.vlrInvestimentoMeta || 0,
+                        vlrInvestimentoGoogleReadOnly: googleRes.data?.vlrInvestimentoGoogle || 0
+                    });
+                } catch (error) {
+                    setFormData({ dataLancamento: new Date().toISOString().split('T')[0] });
+                }
+            }
+        };
+        fetchInvestments();
+    }, [item, idCliente]);
 
     const mutation = useMutation({
         mutationFn: (data: any) => {
@@ -462,8 +485,8 @@ function LancamentoModal({ onClose, idCliente, idModeloControle, onSuccess, item
                                 <InputField label="Qtd Facebook" name="qtdFacebook" value={formData.qtdFacebook} onChange={handleChange} />
                                 <InputField label="Qtd Google" name="qtdGoogle" value={formData.qtdGoogle} onChange={handleChange} />
                                 <InputField label="Qtd Indicação" name="qtdIndicacao" value={formData.qtdIndicacao} onChange={handleChange} />
-                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMeta" required={false} value={formData.vlrInvestimentoMeta} onChange={handleChange} placeholder="R$ 0,00" />
-                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogle" required={false} value={formData.vlrInvestimentoGoogle} onChange={handleChange} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMetaReadOnly" required={false} value={formData.vlrInvestimentoMetaReadOnly} disabled={true} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogleReadOnly" required={false} value={formData.vlrInvestimentoGoogleReadOnly} disabled={true} placeholder="R$ 0,00" />
                             </>
                         )}
                         {isCadastro && (
@@ -472,8 +495,8 @@ function LancamentoModal({ onClose, idCliente, idModeloControle, onSuccess, item
                                 <InputField label="Cliques no Link" name="qtdClickLink" value={formData.qtdClickLink} onChange={handleChange} />
                                 <InputField label="Qtd Cadastros" name="qtdCadastros" value={formData.qtdCadastros} onChange={handleChange} />
                                 <InputField label="Ticket Médio (R$)" name="vlrTicketMedio" value={formData.vlrTicketMedio} onChange={handleChange} placeholder="R$ 0,00" />
-                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMeta" required={false} value={formData.vlrInvestimentoMeta} onChange={handleChange} placeholder="R$ 0,00" />
-                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogle" required={false} value={formData.vlrInvestimentoGoogle} onChange={handleChange} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMetaReadOnly" required={false} value={formData.vlrInvestimentoMetaReadOnly} disabled={true} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogleReadOnly" required={false} value={formData.vlrInvestimentoGoogleReadOnly} disabled={true} placeholder="R$ 0,00" />
                             </>
                         )}
                         {isSaude && (
@@ -486,8 +509,8 @@ function LancamentoModal({ onClose, idCliente, idModeloControle, onSuccess, item
                                 <InputField label="Ticket Médio Consulta" name="vlrTicketMedioConsultas" required={false} value={formData.vlrTicketMedioConsultas} onChange={handleChange} placeholder="R$ 0,00" />
                                 <InputField label="Entrada Redes Sociais" name="qtdEntradaRedesSociais" value={formData.qtdEntradaRedesSociais} onChange={handleChange} />
                                 <InputField label="Entrada Google" name="qtdEntradaGoogle" value={formData.qtdEntradaGoogle} onChange={handleChange} />
-                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMeta" required={false} value={formData.vlrInvestimentoMeta} onChange={handleChange} placeholder="R$ 0,00" />
-                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogle" required={false} value={formData.vlrInvestimentoGoogle} onChange={handleChange} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Meta (R$)" name="vlrInvestimentoMetaReadOnly" required={false} value={formData.vlrInvestimentoMetaReadOnly} disabled={true} placeholder="R$ 0,00" />
+                                <InputField label="Investimento Google (R$)" name="vlrInvestimentoGoogleReadOnly" required={false} value={formData.vlrInvestimentoGoogleReadOnly} disabled={true} placeholder="R$ 0,00" />
                             </>
                         )}
                     </div>
