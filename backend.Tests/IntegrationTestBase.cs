@@ -22,6 +22,7 @@ namespace backend.Tests
 
             _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
+                builder.UseEnvironment("Testing");
                 builder.ConfigureServices(services =>
                 {
                     // Remove existing DbContext

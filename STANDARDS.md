@@ -24,3 +24,4 @@ Para manter a integridade e qualidade do projeto, todos os desenvolvedores (incl
     - **Frontend**: Utilizar `Vitest` e `React Testing Library` para componentes. `Playwright` para testes de fim-a-fim (E2E).
     - **Cobertura**: Novas funcionalidades críticas (cálculos e fluxos de acesso) devem obrigatoriamente acompanhar testes.
     - **Massa de Dados**: Utilizar o `SeedData` do projeto como base para testes de integração, garantindo que o ambiente de teste seja idêntico ao de desenvolvimento.
+14. **Testes de Qualidade**: É terminantemente proibido finalizar qualquer tarefa ou realizar entregas com testes unitários ou de integração falhando. A integridade do sistema é prioridade absoluta.
