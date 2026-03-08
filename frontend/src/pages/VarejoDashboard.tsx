@@ -4,6 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import ClientSelector from '../components/ClientSelector';
+import type { Cliente } from '../components/ClientSelector';
+
+interface VarejoStats {
+    totalFaturamento: number;
+    roas: number;
+    conversionRate: number;
+    totalInvestimento: number;
+    totalInstagram: number;
+    totalAtendimento: number;
+    totalFacebook: number;
+    totalGoogle: number;
+    totalIndicacao: number;
+    totalInvestimentoMeta: number;
+    totalInvestimentoGoogle: number;
+}
 
 function Tooltip({ text, children, className = "inline-block" }: { text: string, children: React.ReactNode, className?: string }) {
     const [show, setShow] = useState(false);
@@ -35,12 +50,12 @@ export default function VarejoDashboard() {
         return user.role !== 'admin' ? user.idCliente : null;
     });
 
-    const { data: stats, isLoading } = useQuery<any>({
+    const { data: stats, isLoading } = useQuery<VarejoStats>({
         queryKey: ['varejo-stats', selectedClienteId],
         queryFn: async () => (await api.get('/dashboard/varejo', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: clientes, isLoading: isLoadingClientes } = useQuery<any[]>({
+    const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
         queryKey: ['clientes'],
         queryFn: async () => (await api.get('/cliente')).data
     });
@@ -75,10 +90,10 @@ export default function VarejoDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Faturamento Total" value={`R$ ${stats?.totalFaturamento?.toLocaleString()}`} icon={<Wallet size={24} />} color="blue" hint="Soma de todos os faturamentos registrados no período." />
-                <StatCard title="ROAS" value={`${stats?.roas?.toFixed(2)}x`} icon={<TrendingUp size={24} />} color="emerald" hint="Retorno sobre investimento (Faturamento / Investimento Total)." />
-                <StatCard title="Conversão" value={`${(stats?.conversionRate * 100).toFixed(1)}%`} icon={<Award size={24} />} color="indigo" hint="Eficiência de fechamento (Fechamentos / Atendimentos)." />
-                <StatCard title="Total Investido" value={`R$ ${stats?.totalInvestimento?.toLocaleString()}`} icon={<TrendingUp size={24} />} color="blue" hint="Soma de investimentos em Meta e Google." />
+                <StatCard title="Faturamento Total" value={`R$ ${stats?.totalFaturamento?.toLocaleString() || '0'}`} icon={<Wallet size={24} />} color="blue" hint="Soma de todos os faturamentos registrados no período." />
+                <StatCard title="ROAS" value={`${stats?.roas?.toFixed(2) || '0.00'}x`} icon={<TrendingUp size={24} />} color="emerald" hint="Retorno sobre investimento (Faturamento / Investimento Total)." />
+                <StatCard title="Conversão" value={`${((stats?.conversionRate || 0) * 100).toFixed(1)}%`} icon={<Award size={24} />} color="indigo" hint="Eficiência de fechamento (Fechamentos / Atendimentos)." />
+                <StatCard title="Total Investido" value={`R$ ${stats?.totalInvestimento?.toLocaleString() || '0'}`} icon={<TrendingUp size={24} />} color="blue" hint="Soma de investimentos em Meta e Google." />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -91,10 +106,10 @@ export default function VarejoDashboard() {
                     </div>
 
                     <div className="space-y-6">
-                        <ChannelRow label="Instagram" value={stats?.totalInstagram} total={stats?.totalAtendimento} icon={<Instagram size={18} />} color="bg-gradient-to-r from-purple-500 to-pink-500" />
-                        <ChannelRow label="Facebook" value={stats?.totalFacebook} total={stats?.totalAtendimento} icon={<Facebook size={18} />} color="bg-blue-600" />
-                        <ChannelRow label="Google" value={stats?.totalGoogle} total={stats?.totalAtendimento} icon={<Search size={18} />} color="bg-red-500" />
-                        <ChannelRow label="Indicação" value={stats?.totalIndicacao} total={stats?.totalAtendimento} icon={<Users size={18} />} color="bg-emerald-500" />
+                        <ChannelRow label="Instagram" value={stats?.totalInstagram || 0} total={stats?.totalAtendimento || 1} icon={<Instagram size={18} />} color="bg-gradient-to-r from-purple-500 to-pink-500" />
+                        <ChannelRow label="Facebook" value={stats?.totalFacebook || 0} total={stats?.totalAtendimento || 1} icon={<Facebook size={18} />} color="bg-blue-600" />
+                        <ChannelRow label="Google" value={stats?.totalGoogle || 0} total={stats?.totalAtendimento || 1} icon={<Search size={18} />} color="bg-red-500" />
+                        <ChannelRow label="Indicação" value={stats?.totalIndicacao || 0} total={stats?.totalAtendimento || 1} icon={<Users size={18} />} color="bg-emerald-500" />
                     </div>
                 </div>
 
@@ -107,18 +122,18 @@ export default function VarejoDashboard() {
                             <div className="h-1.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full mt-2">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: stats?.totalInvestimento > 0 ? `${(stats.totalInvestimentoMeta / stats.totalInvestimento) * 100}%` : '0%' }}
+                                    animate={{ width: (stats?.totalInvestimento ?? 0) > 0 ? `${((stats?.totalInvestimentoMeta ?? 0) / (stats?.totalInvestimento ?? 1)) * 100}%` : '0%' }}
                                     className="h-full bg-blue-500 rounded-full"
                                 />
                             </div>
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase text-neutral-400 mb-2">Google Ads</p>
-                            <p className="text-2xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalInvestimentoGoogle?.toLocaleString()}</p>
+                            <p className="text-2xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalInvestimentoGoogle?.toLocaleString() || '0'}</p>
                             <div className="h-1.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full mt-2">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: stats?.totalInvestimento > 0 ? `${(stats.totalInvestimentoGoogle / stats.totalInvestimento) * 100}%` : '0%' }}
+                                    animate={{ width: (stats?.totalInvestimento ?? 0) > 0 ? `${((stats?.totalInvestimentoGoogle ?? 0) / (stats?.totalInvestimento ?? 1)) * 100}%` : '0%' }}
                                     className="h-full bg-red-500 rounded-full"
                                 />
                             </div>
@@ -134,8 +149,16 @@ export default function VarejoDashboard() {
     );
 }
 
-function StatCard({ title, value, icon, color, hint }: any) {
-    const colorClasses: any = {
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    color: 'blue' | 'emerald' | 'indigo';
+    hint: string;
+}
+
+function StatCard({ title, value, icon, color, hint }: StatCardProps) {
+    const colorClasses: Record<string, string> = {
         blue: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
         emerald: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400",
         indigo: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
@@ -158,7 +181,15 @@ function StatCard({ title, value, icon, color, hint }: any) {
     );
 }
 
-function ChannelRow({ label, value, total, icon, color }: any) {
+interface ChannelRowProps {
+    label: string;
+    value: number;
+    total: number;
+    icon: React.ReactNode;
+    color: string;
+}
+
+function ChannelRow({ label, value, total, icon, color }: ChannelRowProps) {
     const percentage = total > 0 ? (value / total) * 100 : 0;
     return (
         <div className="space-y-2">

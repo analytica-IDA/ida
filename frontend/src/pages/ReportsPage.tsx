@@ -38,22 +38,22 @@ export default function ReportsPage() {
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
 
-    const { data: distribution, isLoading: isLoadingDist } = useQuery<any[]>({
+    const { data: distribution, isLoading: isLoadingDist } = useQuery<Array<{ label: string; value: number }>>({
         queryKey: ['report-dist', selectedClienteId],
         queryFn: async () => (await api.get('/report/launch-distribution', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: productivity, isLoading: isLoadingProd } = useQuery<any[]>({
+    const { data: productivity, isLoading: isLoadingProd } = useQuery<Array<{ id: number; userName: string; faturamento: number; launchCount: number; clients: string[] }>>({
         queryKey: ['report-prod', selectedClienteId],
         queryFn: async () => (await api.get('/report/user-productivity', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: clientes, isLoading: isLoadingClientes } = useQuery<any[]>({
+    const { data: clientes, isLoading: isLoadingClientes } = useQuery<Array<{ id: number; nome: string }>>({
         queryKey: ['clientes'],
         queryFn: async () => (await api.get('/cliente')).data
     });
 
-    const { data: userDetails, isLoading: isLoadingDetails } = useQuery<any[]>({
+    const { data: userDetails, isLoading: isLoadingDetails } = useQuery<Array<{ type: string; date: string; summary: string; valor: number }>>({
         queryKey: ['user-details', selectedUserId],
         queryFn: async () => (await api.get(`/report/user-details/${selectedUserId}`)).data,
         enabled: !!selectedUserId

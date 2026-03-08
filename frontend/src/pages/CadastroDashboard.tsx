@@ -3,7 +3,18 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Cliente } from '../components/ClientSelector';
 import ClientSelector from '../components/ClientSelector';
+
+interface CadastroStats {
+    totalCadastros: number;
+    roas: number;
+    conversionRate: number;
+    cpa: number;
+    totalClickLink: number;
+    totalFaturamento: number;
+    totalInvestimento: number;
+}
 
 function Tooltip({ text, children, className = "inline-block" }: { text: string, children: React.ReactNode, className?: string }) {
     const [show, setShow] = useState(false);
@@ -35,12 +46,12 @@ export default function CadastroDashboard() {
         return user.role !== 'admin' ? user.idCliente : null;
     });
 
-    const { data: stats, isLoading } = useQuery<any>({
+    const { data: stats, isLoading } = useQuery<CadastroStats>({
         queryKey: ['cadastro-stats', selectedClienteId],
         queryFn: async () => (await api.get('/dashboard/cadastro', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: clientes, isLoading: isLoadingClientes } = useQuery<any[]>({
+    const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
         queryKey: ['clientes'],
         queryFn: async () => (await api.get('/cliente')).data
     });
@@ -75,10 +86,10 @@ export default function CadastroDashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total de Cadastros" value={stats?.totalCadastros} icon={<UserCheck size={24} />} color="amber" hint="Número total de formulários de cadastro preenchidos." />
-                <StatCard title="ROAS" value={`${stats?.roas?.toFixed(2)}x`} icon={<TrendingUp size={24} />} color="emerald" hint="Retorno sobre investimento (Faturamento Estimado / Investimento)." />
-                <StatCard title="Taxa de Conversão" value={`${(stats?.conversionRate * 100).toFixed(1)}%`} icon={<MousePointer2 size={24} />} color="blue" hint="Taxa de Cliques no Link que se tornaram Cadastros." />
-                <StatCard title="CPA Real" value={`R$ ${stats?.cpa?.toFixed(2)}`} icon={<DollarSign size={24} />} color="amber" hint="Custo por Cadastro (Investimento Total / Total de Cadastros)." />
+                <StatCard title="Total de Cadastros" value={stats?.totalCadastros || 0} icon={<UserCheck size={24} />} color="amber" hint="Número total de formulários de cadastro preenchidos." />
+                <StatCard title="ROAS" value={`${stats?.roas?.toFixed(2) || '0.00'}x`} icon={<TrendingUp size={24} />} color="emerald" hint="Retorno sobre investimento (Faturamento Estimado / Investimento)." />
+                <StatCard title="Taxa de Conversão" value={`${((stats?.conversionRate || 0) * 100).toFixed(1)}%`} icon={<MousePointer2 size={24} />} color="blue" hint="Taxa de Cliques no Link que se tornaram Cadastros." />
+                <StatCard title="CPA Real" value={`R$ ${stats?.cpa?.toFixed(2) || '0.00'}`} icon={<DollarSign size={24} />} color="amber" hint="Custo por Cadastro (Investimento Total / Total de Cadastros)." />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -87,13 +98,13 @@ export default function CadastroDashboard() {
                     <div className="flex h-64 items-end gap-12 px-8 pb-4">
                         <div className="flex-1 flex flex-col items-center gap-4">
                             <motion.div initial={{ height: 0 }} animate={{ height: '100%' }} className="w-24 bg-blue-500/20 border-x border-t border-blue-500/50 rounded-t-3xl relative">
-                                <span className="absolute -top-8 w-full text-center font-black text-blue-600">{stats?.totalClickLink}</span>
+                                <span className="absolute -top-8 w-full text-center font-black text-blue-600">{stats?.totalClickLink || 0}</span>
                             </motion.div>
                             <span className="text-[10px] font-black uppercase text-neutral-400">Cliques</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-4">
-                            <motion.div initial={{ height: 0 }} animate={{ height: stats?.totalClickLink > 0 ? `${(stats.totalCadastros / stats.totalClickLink) * 100}%` : '0%' }} className="w-24 bg-amber-500 border-x border-t border-amber-600 rounded-t-3xl relative shadow-lg shadow-amber-500/20">
-                                <span className="absolute -top-8 w-full text-center font-black text-amber-600">{stats?.totalCadastros}</span>
+                            <motion.div initial={{ height: 0 }} animate={{ height: stats?.totalClickLink && stats.totalClickLink > 0 ? `${((stats.totalCadastros || 0) / stats.totalClickLink) * 100}%` : '0%' }} className="w-24 bg-amber-500 border-x border-t border-amber-600 rounded-t-3xl relative shadow-lg shadow-amber-500/20">
+                                <span className="absolute -top-8 w-full text-center font-black text-amber-600">{stats?.totalCadastros || 0}</span>
                             </motion.div>
                             <span className="text-[10px] font-black uppercase text-neutral-400">Cadastros</span>
                         </div>
@@ -106,7 +117,7 @@ export default function CadastroDashboard() {
                         <div className="p-6 rounded-3xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                             <div>
                                 <p className="text-[10px] font-black uppercase text-neutral-400 mb-1">Faturamento Estimado</p>
-                                <p className="text-3xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalFaturamento?.toLocaleString()}</p>
+                                <p className="text-3xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalFaturamento?.toLocaleString() || '0'}</p>
                             </div>
                             <div className="p-4 bg-emerald-500/10 text-emerald-500 rounded-2xl">
                                 <TrendingUp size={24} />
@@ -116,7 +127,7 @@ export default function CadastroDashboard() {
                         <div className="p-6 rounded-3xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 flex justify-between items-center">
                             <div>
                                 <p className="text-[10px] font-black uppercase text-neutral-400 mb-1">Investimento Total</p>
-                                <p className="text-3xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalInvestimento?.toLocaleString()}</p>
+                                <p className="text-3xl font-black text-neutral-900 dark:text-white">R$ {stats?.totalInvestimento?.toLocaleString() || '0'}</p>
                             </div>
                             <div className="p-4 bg-blue-500/10 text-blue-500 rounded-2xl">
                                 <Wallet size={24} />
@@ -136,8 +147,16 @@ export default function CadastroDashboard() {
     );
 }
 
-function StatCard({ title, value, icon, color, hint }: any) {
-    const colorClasses: any = {
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    color: 'blue' | 'emerald' | 'amber';
+    hint: string;
+}
+
+function StatCard({ title, value, icon, color, hint }: StatCardProps) {
+    const colorClasses: Record<string, string> = {
         blue: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
         emerald: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400",
         amber: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"

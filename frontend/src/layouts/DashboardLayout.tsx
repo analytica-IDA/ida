@@ -16,7 +16,23 @@ interface LayoutProps {
   theme: string;
 }
 
-const iconMap: Record<string, any> = {
+interface UserProfile {
+  nome: string;
+  cargo?: string;
+  role: string;
+  email: string;
+  cpf: string;
+  telefone?: string;
+}
+
+interface UserNotification {
+  id: number;
+  titulo: string;
+  mensagem: string;
+  dtUltimaAtualizacao: string;
+}
+
+const iconMap: Record<string, React.ReactNode> = {
   "Página Inicial": <LayoutDashboard size={20} />,
   "Dashboard": <LayoutDashboard size={20} />,
   "Gerenciamento de Cliente": <Building2 size={20} />,
@@ -66,7 +82,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data: userProfile } = useQuery<any>({
+  const { data: userProfile } = useQuery<UserProfile>({
     queryKey: ['user-me'],
     queryFn: async () => {
       const { data } = await api.get('/user/me');
@@ -82,7 +98,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
     },
   });
 
-  const { data: notificacoes, refetch: refetchNotificacoes } = useQuery<any[]>({
+  const { data: notificacoes, refetch: refetchNotificacoes } = useQuery<UserNotification[]>({
     queryKey: ['notificacoes'],
     queryFn: async () => {
       const { data } = await api.get('/notification/nao-lidas');
@@ -107,11 +123,12 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
 
   // Close dropdown on click outside
   useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (isUserMenuOpen && !event.target.closest('.user-menu-container')) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isUserMenuOpen && !target.closest('.user-menu-container')) {
         setUserMenuOpen(false);
       }
-      if (isNotificationOpen && !event.target.closest('.notification-container')) {
+      if (isNotificationOpen && !target.closest('.notification-container')) {
         setNotificationOpen(false);
         if (notificacoes && notificacoes.length > 0) {
           api.post('/notification/ler-todas').then(() => refetchNotificacoes()).catch(e => console.error(e));
@@ -120,7 +137,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
     };
     window.addEventListener('mousedown', handleClickOutside);
     return () => window.removeEventListener('mousedown', handleClickOutside);
-  }, [isUserMenuOpen, isNotificationOpen, notificacoes]);
+  }, [isUserMenuOpen, isNotificationOpen, notificacoes, refetchNotificacoes]);
 
 
   return (
@@ -233,7 +250,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
 
                     <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                       {notificacoes && notificacoes.length > 0 ? (
-                        notificacoes.map((notif: any) => (
+                        notificacoes.map((notif: UserNotification) => (
                           <div key={notif.id} className="p-4 border-b border-neutral-50 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group">
                             <div className="flex justify-between items-start gap-3">
                               <div className="flex-1">
@@ -379,7 +396,7 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
   );
 }
 
-function SidebarItem({ icon, label, to, isOpen, active }: { icon: any; label: string; to: string; isOpen: boolean; active?: boolean }) {
+function SidebarItem({ icon, label, to, isOpen, active }: { icon: React.ReactNode; label: string; to: string; isOpen: boolean; active?: boolean }) {
   return (
     <Link
       to={to}
