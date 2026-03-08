@@ -1,8 +1,9 @@
-import { BarChart3, TrendingUp, Users, Wallet, Calendar, Filter, Loader2, ArrowUpRight, ArrowDownRight, X, ChevronRight, Info } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Wallet, Calendar, Loader2, ArrowUpRight, ArrowDownRight, X, ChevronRight, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import ClientSelector from '../components/ClientSelector';
 
 function Tooltip({ text, children, className = "inline-block" }: { text: string, children: React.ReactNode, className?: string }) {
     const [show, setShow] = useState(false);
@@ -30,7 +31,10 @@ function Tooltip({ text, children, className = "inline-block" }: { text: string,
 }
 
 export default function ReportsPage() {
-    const [selectedClienteId, setSelectedClienteId] = useState<number | null>(null);
+    const [selectedClienteId, setSelectedClienteId] = useState<number | null>(() => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        return user.role !== 'admin' ? user.idCliente : null;
+    });
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
 
@@ -44,7 +48,7 @@ export default function ReportsPage() {
         queryFn: async () => (await api.get('/report/user-productivity', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: clientes } = useQuery<any[]>({
+    const { data: clientes, isLoading: isLoadingClientes } = useQuery<any[]>({
         queryKey: ['clientes'],
         queryFn: async () => (await api.get('/cliente')).data
     });
@@ -62,19 +66,13 @@ export default function ReportsPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">Relatórios Estratégicos</h1>
                     <p className="text-neutral-500 dark:text-neutral-400 mt-1">Visão analítica de performance e investimentos.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-white dark:bg-neutral-900 px-4 py-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-500/20">
-                    <Tooltip text="Filtre todos os dados por um cliente específico para uma análise direcionada.">
-                        <Filter size={18} className="text-neutral-400" />
-                    </Tooltip>
-                    <select
-                        className="bg-transparent border-none text-sm font-bold text-neutral-700 dark:text-neutral-200 focus:ring-0 outline-none cursor-pointer pr-8 appearance-none"
-                        value={selectedClienteId || ""}
-                        onChange={(e) => setSelectedClienteId(e.target.value ? Number(e.target.value) : null)}
-                    >
-                        <option value="" className="dark:bg-neutral-900">Todos os Clientes</option>
-                        {clientes?.map(c => <option key={c.id} value={c.id} className="dark:bg-neutral-900">{c.nome}</option>)}
-                    </select>
-                </div>
+                <ClientSelector
+                    clientes={clientes}
+                    selectedValue={selectedClienteId}
+                    onChange={setSelectedClienteId}
+                    isLoading={isLoadingClientes}
+                    disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
+                />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

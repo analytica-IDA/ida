@@ -1,8 +1,9 @@
-import { Store, TrendingUp, Users, Wallet, Filter, Loader2, Instagram, Facebook, Search, Award } from 'lucide-react';
+import { Store, TrendingUp, Users, Wallet, Loader2, Instagram, Facebook, Search, Award } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import ClientSelector from '../components/ClientSelector';
 
 function Tooltip({ text, children, className = "inline-block" }: { text: string, children: React.ReactNode, className?: string }) {
     const [show, setShow] = useState(false);
@@ -39,7 +40,7 @@ export default function VarejoDashboard() {
         queryFn: async () => (await api.get('/dashboard/varejo', { params: { idCliente: selectedClienteId } })).data
     });
 
-    const { data: clientes } = useQuery<any[]>({
+    const { data: clientes, isLoading: isLoadingClientes } = useQuery<any[]>({
         queryKey: ['clientes'],
         queryFn: async () => (await api.get('/cliente')).data
     });
@@ -64,18 +65,13 @@ export default function VarejoDashboard() {
                         <p className="text-neutral-500 dark:text-neutral-400 font-medium">Análise de vendas e performance de canais.</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 bg-white dark:bg-neutral-900 px-4 py-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                    <Filter size={18} className="text-neutral-400" />
-                    <select
-                        className="bg-transparent border-none text-sm font-bold text-neutral-700 dark:text-neutral-200 focus:ring-0 outline-none cursor-pointer pr-8 appearance-none disabled:opacity-50"
-                        value={selectedClienteId || ""}
-                        onChange={(e) => setSelectedClienteId(e.target.value ? Number(e.target.value) : null)}
-                        disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
-                    >
-                        <option value="" className="dark:bg-neutral-900">Todos os Clientes</option>
-                        {clientes?.map(c => <option key={c.id} value={c.id} className="dark:bg-neutral-900">{c.nome}</option>)}
-                    </select>
-                </div>
+                <ClientSelector
+                    clientes={clientes}
+                    selectedValue={selectedClienteId}
+                    onChange={setSelectedClienteId}
+                    isLoading={isLoadingClientes}
+                    disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
+                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
