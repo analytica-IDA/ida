@@ -141,7 +141,7 @@ namespace backend.Tests
 
             // Act
             // Attempting to request idCliente=502, but claims are for idCliente=501
-            var result = await controller.GetVarejoStats(502);
+            var result = await controller.GetVarejoStats(502, null);
 
             // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -152,36 +152,72 @@ namespace backend.Tests
         }
 
         [Fact]
-        public async Task GetVarejoStats_Admin_AllowsAnyClientId()
+        public async Task GetVarejoStats_WithAreaId_FiltersCorrectUsers()
         {
             // Arrange
             var controller = CreateController("1", "0"); // Admin
-            
-            // Data for Cliente 502
-            _context.Pessoas.Add(new Pessoa { Id = 530, Nome = "P3", Cpf = "530", Email = "3", Telefone = "3", IdCliente = 502 });
-            _context.Usuarios.Add(new Usuario { Id = 530, Login = "U3", IdCargo = 1, FlAtivo = true });
-            _context.ClientesUsuarios.Add(new ClienteUsuario { Id = 530, IdCliente = 502, IdUsuario = 530, IdArea = 1 });
+            var idCliente = 502L;
+            var idArea1 = 10L;
+            var idArea2 = 11L;
+
+            _context.Areas.AddRange(
+                new Area { Id = idArea1, Nome = "Area 1" },
+                new Area { Id = idArea2, Nome = "Area 2" }
+            );
+
+            // User 1 in Area 1
+            _context.Pessoas.Add(new Pessoa { Id = 601, Nome = "P1", Cpf = "601", Email = "1", Telefone = "1", IdCliente = idCliente });
+            _context.Usuarios.Add(new Usuario { Id = 601, Login = "U1", IdCargo = 1, FlAtivo = true });
+            _context.ClientesUsuarios.Add(new ClienteUsuario { Id = 601, IdCliente = idCliente, IdUsuario = 601, IdArea = idArea1 });
             
             _context.LancamentosVarejo.Add(new LancamentoVarejo 
             { 
-                Id = 503, 
-                IdUsuario = 530, 
-                Faturamento = 8000, 
-                IdModeloControle = 2, // Varejo
+                Id = 601, 
+                IdUsuario = 601, 
+                Faturamento = 1000, 
+                IdModeloControle = 2, 
+                DataLancamento = DateTime.Now 
+            });
+
+            // User 2 in Area 2
+            _context.Pessoas.Add(new Pessoa { Id = 602, Nome = "P2", Cpf = "602", Email = "2", Telefone = "2", IdCliente = idCliente });
+            _context.Usuarios.Add(new Usuario { Id = 602, Login = "U2", IdCargo = 1, FlAtivo = true });
+            _context.ClientesUsuarios.Add(new ClienteUsuario { Id = 602, IdCliente = idCliente, IdUsuario = 602, IdArea = idArea2 });
+            
+            _context.LancamentosVarejo.Add(new LancamentoVarejo 
+            { 
+                Id = 602, 
+                IdUsuario = 602, 
+                Faturamento = 5000, 
+                IdModeloControle = 2, 
                 DataLancamento = DateTime.Now 
             });
 
             _context.SaveChanges();
 
-            // Act
-            var result = await controller.GetVarejoStats(502);
+            // Act - Request only Area 1
+            var result = await controller.GetVarejoStats(idCliente, idArea1);
 
             // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okResult.Value.Should().NotBeNull();
-            
             var faturamento = okResult.Value.GetType().GetProperty("totalFaturamento")?.GetValue(okResult.Value);
-            faturamento.Should().Be(8000m); 
+            faturamento.Should().Be(1000m);
+
+            // Act - Request only Area 2
+            var resultArea2 = await controller.GetVarejoStats(idCliente, idArea2);
+
+            // Assert
+            var okResult2 = resultArea2.Should().BeOfType<OkObjectResult>().Subject;
+            var faturamento2 = okResult2.Value.GetType().GetProperty("totalFaturamento")?.GetValue(okResult2.Value);
+            faturamento2.Should().Be(5000m);
+
+            // Act - Request without area
+            var resultAll = await controller.GetVarejoStats(idCliente, null);
+
+            // Assert
+            var okResultAll = resultAll.Should().BeOfType<OkObjectResult>().Subject;
+            var faturamentoAll = okResultAll.Value.GetType().GetProperty("totalFaturamento")?.GetValue(okResultAll.Value);
+            faturamentoAll.Should().Be(6000m);
         }
 
         public void Dispose()

@@ -42,7 +42,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("stats")]
-        public async Task<IActionResult> GetStats([FromQuery] long? idCliente)
+        public async Task<IActionResult> GetStats([FromQuery] long? idCliente, [FromQuery] long? idArea)
         {
             var roleId = GetCurrentRoleId();
             var claimClientId = GetCurrentClientId();
@@ -59,6 +59,16 @@ namespace backend.Controllers
                 usersQuery = usersQuery.Where(u => u.Pessoa!.IdCliente == idCliente.Value);
                 clientsQuery = clientsQuery.Where(c => c.Id == idCliente.Value);
                 personsQuery = personsQuery.Where(p => p.IdCliente == idCliente.Value);
+
+                if (idArea.HasValue)
+                {
+                    var userIdsInArea = await _context.ClientesUsuarios
+                        .Where(cu => cu.IdCliente == idCliente.Value && cu.IdArea == idArea.Value)
+                        .Select(cu => cu.IdUsuario)
+                        .ToListAsync();
+                    usersQuery = usersQuery.Where(u => userIdsInArea.Contains(u.Id));
+                    personsQuery = personsQuery.Where(p => p.IdCliente == idCliente.Value); // Persons are client-wide? or should we filter by creator? usually client-wide in stats
+                }
             }
 
             var activeUsers = await usersQuery.CountAsync(u => u.FlAtivo);
@@ -76,7 +86,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("varejo")]
-        public async Task<IActionResult> GetVarejoStats([FromQuery] long? idCliente)
+        public async Task<IActionResult> GetVarejoStats([FromQuery] long? idCliente, [FromQuery] long? idArea)
         {
             var roleId = GetCurrentRoleId();
             var claimClientId = GetCurrentClientId();
@@ -89,8 +99,15 @@ namespace backend.Controllers
 
             if (idCliente.HasValue)
             {
-                var userIds = await _context.ClientesUsuarios
-                    .Where(cu => cu.IdCliente == idCliente.Value)
+                var userIdsQuery = _context.ClientesUsuarios
+                    .Where(cu => cu.IdCliente == idCliente.Value);
+                
+                if (idArea.HasValue)
+                {
+                    userIdsQuery = userIdsQuery.Where(cu => cu.IdArea == idArea.Value);
+                }
+
+                var userIds = await userIdsQuery
                     .Select(cu => cu.IdUsuario)
                     .ToListAsync();
 
@@ -131,7 +148,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("saude")]
-        public async Task<IActionResult> GetSaudeStats([FromQuery] long? idCliente)
+        public async Task<IActionResult> GetSaudeStats([FromQuery] long? idCliente, [FromQuery] long? idArea)
         {
             var roleId = GetCurrentRoleId();
             var claimClientId = GetCurrentClientId();
@@ -144,8 +161,15 @@ namespace backend.Controllers
 
             if (idCliente.HasValue)
             {
-                var userIds = await _context.ClientesUsuarios
-                    .Where(cu => cu.IdCliente == idCliente.Value)
+                var userIdsQuery = _context.ClientesUsuarios
+                    .Where(cu => cu.IdCliente == idCliente.Value);
+
+                if (idArea.HasValue)
+                {
+                    userIdsQuery = userIdsQuery.Where(cu => cu.IdArea == idArea.Value);
+                }
+
+                var userIds = await userIdsQuery
                     .Select(cu => cu.IdUsuario)
                     .ToListAsync();
 
@@ -187,7 +211,7 @@ namespace backend.Controllers
         }
 
         [HttpGet("cadastro")]
-        public async Task<IActionResult> GetCadastroStats([FromQuery] long? idCliente)
+        public async Task<IActionResult> GetCadastroStats([FromQuery] long? idCliente, [FromQuery] long? idArea)
         {
             var roleId = GetCurrentRoleId();
             var claimClientId = GetCurrentClientId();
@@ -200,8 +224,15 @@ namespace backend.Controllers
 
             if (idCliente.HasValue)
             {
-                var userIds = await _context.ClientesUsuarios
-                    .Where(cu => cu.IdCliente == idCliente.Value)
+                var userIdsQuery = _context.ClientesUsuarios
+                    .Where(cu => cu.IdCliente == idCliente.Value);
+
+                if (idArea.HasValue)
+                {
+                    userIdsQuery = userIdsQuery.Where(cu => cu.IdArea == idArea.Value);
+                }
+
+                var userIds = await userIdsQuery
                     .Select(cu => cu.IdUsuario)
                     .ToListAsync();
 

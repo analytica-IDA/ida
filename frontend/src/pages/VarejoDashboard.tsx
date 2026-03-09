@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import ClientSelector from '../components/ClientSelector';
+import AreaSelector from '../components/AreaSelector';
 import type { Cliente } from '../components/ClientSelector';
 
 interface VarejoStats {
@@ -49,10 +50,11 @@ export default function VarejoDashboard() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         return user.role !== 'admin' ? user.idCliente : null;
     });
+    const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
 
     const { data: stats, isLoading } = useQuery<VarejoStats>({
-        queryKey: ['varejo-stats', selectedClienteId],
-        queryFn: async () => (await api.get('/dashboard/varejo', { params: { idCliente: selectedClienteId } })).data
+        queryKey: ['varejo-stats', selectedClienteId, selectedAreaId],
+        queryFn: async () => (await api.get('/dashboard/varejo', { params: { idCliente: selectedClienteId, idArea: selectedAreaId } })).data
     });
 
     const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
@@ -80,13 +82,23 @@ export default function VarejoDashboard() {
                         <p className="text-neutral-500 dark:text-neutral-400 font-medium">Análise de vendas e performance de canais.</p>
                     </div>
                 </div>
-                <ClientSelector
-                    clientes={clientes}
-                    selectedValue={selectedClienteId}
-                    onChange={setSelectedClienteId}
-                    isLoading={isLoadingClientes}
-                    disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
-                />
+                <div className="flex flex-col md:flex-row gap-4">
+                    <AreaSelector
+                        idCliente={selectedClienteId}
+                        selectedValue={selectedAreaId}
+                        onChange={setSelectedAreaId}
+                    />
+                    <ClientSelector
+                        clientes={clientes}
+                        selectedValue={selectedClienteId}
+                        onChange={(val) => {
+                            setSelectedClienteId(val);
+                            setSelectedAreaId(null);
+                        }}
+                        isLoading={isLoadingClientes}
+                        disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
+                    />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -5,6 +5,7 @@ import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Cliente } from '../components/ClientSelector';
 import ClientSelector from '../components/ClientSelector';
+import AreaSelector from '../components/AreaSelector';
 
 interface SaudeStats {
     totalClickMeta: number;
@@ -48,10 +49,11 @@ export default function SaudeDashboard() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         return user.role !== 'admin' ? user.idCliente : null;
     });
+    const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
 
     const { data: stats, isLoading } = useQuery<SaudeStats>({
-        queryKey: ['saude-stats', selectedClienteId],
-        queryFn: async () => (await api.get('/dashboard/saude', { params: { idCliente: selectedClienteId } })).data
+        queryKey: ['saude-stats', selectedClienteId, selectedAreaId],
+        queryFn: async () => (await api.get('/dashboard/saude', { params: { idCliente: selectedClienteId, idArea: selectedAreaId } })).data
     });
 
     const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
@@ -86,13 +88,23 @@ export default function SaudeDashboard() {
                         <p className="text-neutral-500 dark:text-neutral-400 font-medium">Funil de agendamentos e performance clínica.</p>
                     </div>
                 </div>
-                <ClientSelector
-                    clientes={clientes}
-                    selectedValue={selectedClienteId}
-                    onChange={setSelectedClienteId}
-                    isLoading={isLoadingClientes}
-                    disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
-                />
+                <div className="flex flex-col md:flex-row gap-4">
+                    <AreaSelector
+                        idCliente={selectedClienteId}
+                        selectedValue={selectedAreaId}
+                        onChange={setSelectedAreaId}
+                    />
+                    <ClientSelector
+                        clientes={clientes}
+                        selectedValue={selectedClienteId}
+                        onChange={(val) => {
+                            setSelectedClienteId(val);
+                            setSelectedAreaId(null);
+                        }}
+                        isLoading={isLoadingClientes}
+                        disabled={JSON.parse(localStorage.getItem('user') || '{}').role !== 'admin'}
+                    />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

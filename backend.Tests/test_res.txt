@@ -1,0 +1,7 @@
+  Determinando os projetos a serem restaurados...
+  Todos os projetos est??o atualizados para restaura????o.
+  backend -> C:\Portif??lio\ida\backend\bin\Debug\net8.0\backend.dll
+C:\Portif??lio\ida\backend.Tests\DashboardControllerTests.cs(144,43): error CS7036: N??o h?? nenhum argumento fornecido que corresponda ao par??metro necess??rio 'idArea' de 'DashboardController.GetVarejoStats(long?, long?)' [C:\Portif??lio\ida\backend.Tests\backend.Tests.csproj]
+C:\Portif??lio\ida\backend.Tests\DashboardControllerTests.cs(203,31): warning CS8602: Desrefer??ncia de uma refer??ncia possivelmente nula. [C:\Portif??lio\ida\backend.Tests\backend.Tests.csproj]
+C:\Portif??lio\ida\backend.Tests\DashboardControllerTests.cs(211,32): warning CS8602: Desrefer??ncia de uma refer??ncia possivelmente nula. [C:\Portif??lio\ida\backend.Tests\backend.Tests.csproj]
+C:\Portif??lio\ida\backend.Tests\DashboardControllerTests.cs(219,34): warning CS8602: Desrefer??ncia de uma refer??ncia possivelmente nula. [C:\Portif??lio\ida\backend.Tests\backend.Tests.csproj]
