@@ -31,7 +31,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-12 animate-in fade-in duration-1000">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-blue-800 p-8 md:p-16 text-white shadow-2xl shadow-blue-500/20">
         <div className="relative z-10 max-w-2xl space-y-6">

@@ -79,7 +79,7 @@ export default function SaudeDashboard() {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-8 animate-in fade-in duration-1000">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="p-4 bg-emerald-600 rounded-3xl text-white shadow-lg shadow-emerald-500/20">
@@ -160,6 +160,7 @@ export default function SaudeDashboard() {
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${100 - (idx * 15)}%` }}
+                                        transition={{ duration: 2, ease: "easeOut" }}
                                         className={`absolute bottom-0 left-0 h-1 bg-${step.color}-600/30`}
                                     />
                                 </div>
@@ -183,14 +184,14 @@ export default function SaudeDashboard() {
                                 <p className="text-[10px] font-black uppercase text-blue-500 mb-2">Redes Sociais</p>
                                 <p className="text-3xl font-black">{stats?.totalEntradaRedesSociais || 0}</p>
                                 <div className="h-1 w-full bg-blue-200 dark:bg-blue-900/30 rounded-full mt-4 overflow-hidden">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `${((stats?.totalEntradaRedesSociais || 0) / ((stats?.totalEntradaRedesSociais || 0) + (stats?.totalEntradaGoogle || 0) || 1)) * 100}%` }} className="h-full bg-blue-600" />
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${((stats?.totalEntradaRedesSociais || 0) / ((stats?.totalEntradaRedesSociais || 0) + (stats?.totalEntradaGoogle || 0) || 1)) * 100}%` }} transition={{ duration: 2, ease: "easeOut" }} className="h-full bg-blue-600" />
                                 </div>
                             </div>
                             <div className="p-6 rounded-3xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/50">
                                 <p className="text-[10px] font-black uppercase text-red-500 mb-2">Google Ads</p>
                                 <p className="text-3xl font-black">{stats?.totalEntradaGoogle || 0}</p>
                                 <div className="h-1 w-full bg-red-200 dark:bg-red-900/30 rounded-full mt-4 overflow-hidden">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `${((stats?.totalEntradaGoogle || 0) / ((stats?.totalEntradaRedesSociais || 0) + (stats?.totalEntradaGoogle || 0) || 1)) * 100}%` }} className="h-full bg-red-600" />
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${((stats?.totalEntradaGoogle || 0) / ((stats?.totalEntradaRedesSociais || 0) + (stats?.totalEntradaGoogle || 0) || 1)) * 100}%` }} transition={{ duration: 2, ease: "easeOut" }} className="h-full bg-red-600" />
                                 </div>
                             </div>
                         </div>
