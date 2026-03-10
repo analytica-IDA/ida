@@ -47,7 +47,15 @@ namespace backend.Controllers
             
             await _auditService.LogAction(user.Login, "LOGIN", "usuario", "", "Login realizado com sucesso");
 
-            return Ok(new { token, user = new { user.Login, role = user.Cargo?.Role?.Nome, idCliente = user.Pessoa?.IdCliente } });
+            return Ok(new { 
+                token, 
+                user = new { 
+                    user.Login, 
+                    role = user.Cargo?.Role?.Nome, 
+                    idCliente = user.Pessoa?.IdCliente,
+                    idArea = _context.UsuariosAreas.FirstOrDefault(ua => ua.IdUsuario == user.Id)?.IdArea
+                } 
+            });
         }
 
         [Authorize]
@@ -289,9 +297,10 @@ namespace backend.Controllers
                 Cpf = user.Pessoa?.Cpf,
                 Email = user.Pessoa?.Email,
                 Cargo = user.Cargo?.Nome,
-                Areas = user.UsuariosAreas.Select(ua => ua.Area?.Nome).ToList(),
+                Areas = user.UsuariosAreas.Select(ua => new { ua.Area?.Id, ua.Area?.Nome }).ToList(),
                 Role = user.Cargo?.Role?.Nome,
-                IdCliente = user.Pessoa?.IdCliente
+                IdCliente = user.Pessoa?.IdCliente,
+                IdArea = user.UsuariosAreas.FirstOrDefault()?.IdArea ?? user.ClientesUsuarios.FirstOrDefault()?.IdArea
             });
         }
 

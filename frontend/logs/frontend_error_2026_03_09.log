@@ -1,0 +1,85 @@
+[2026-03-09 21:50:31] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:38] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2026-02-09
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:39] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2026-01-09
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:39] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2025-12-09
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:40] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2025-11-09
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:41] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2025-11-30
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:50:43] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8&dataInicial=2025-11-30&dataFinal=2026-03-09
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:51:34] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /lancamento/cliente/2?idModeloControle=2&idArea=8
+[Axios Error] 500: Request failed with status code 500
+Stack: AxiosError: Request failed with status code 500
+    at settle (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1281:12)
+    at XMLHttpRequest.onloadend (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1638:7)
+Data Adicional: {"method":"get","responseData":{"message":"Erro interno no servidor. Ocorrência registrada no log.","details":"Unable to cast object of type 'Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[backend.Models.Lancamento]' to type 'System.Linq.IQueryable`1[backend.Models.LancamentoVarejo]'."}}
+------------------------------------------------------------
+[2026-03-09 21:53:33] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /notification/nao-lidas
+[Axios Error] Network Error: Network Error
+Stack: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1669:19)
+Data Adicional: {"method":"get"}
+------------------------------------------------------------
+[2026-03-09 21:57:03] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /notification/nao-lidas
+[Axios Error] Network Error: Network Error
+Stack: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1669:19)
+Data Adicional: {"method":"get"}
+------------------------------------------------------------
+[2026-03-09 22:05:26] Usuario: {"login":"kenedy.valagume","role":"vendedor","idCliente":2,"idArea":8}
+Erro gerado em: /user/me
+[Axios Error] Network Error: Network Error
+Stack: AxiosError: Network Error
+    at XMLHttpRequest.handleError (http://localhost:3000/node_modules/.vite/deps/axios.js?v=894571a6:1669:19)
+Data Adicional: {"method":"get"}
+------------------------------------------------------------

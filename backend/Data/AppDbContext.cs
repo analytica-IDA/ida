@@ -271,10 +271,15 @@ namespace backend.Data
                 entity.ToTable("cliente_investimento_meta");
                 entity.Property(e => e.VlrInvestimentoMeta).HasPrecision(38, 2).HasDefaultValue(0);
                 entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+                entity.Property(e => e.DataReferencia).HasDefaultValueSql("now()");
 
                 entity.HasOne(d => d.Cliente)
                     .WithMany()
                     .HasForeignKey(d => d.IdCliente);
+
+                entity.HasOne(d => d.Area)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdArea);
             });
 
             // ClienteInvestimentoGoogle
@@ -283,10 +288,15 @@ namespace backend.Data
                 entity.ToTable("cliente_investimento_google");
                 entity.Property(e => e.VlrInvestimentoGoogle).HasPrecision(38, 2).HasDefaultValue(0);
                 entity.Property(e => e.DtUltimaAtualizacao).HasDefaultValueSql("now()");
+                entity.Property(e => e.DataReferencia).HasDefaultValueSql("now()");
 
                 entity.HasOne(d => d.Cliente)
                     .WithMany()
                     .HasForeignKey(d => d.IdCliente);
+
+                entity.HasOne(d => d.Area)
+                    .WithMany()
+                    .HasForeignKey(d => d.IdArea);
             });
 
             SeedData(modelBuilder);

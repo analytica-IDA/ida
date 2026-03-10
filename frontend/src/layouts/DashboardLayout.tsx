@@ -23,6 +23,7 @@ interface UserProfile {
   email: string;
   cpf: string;
   telefone?: string;
+  areas?: { id: number; nome: string }[];
 }
 
 interface UserNotification {
@@ -293,7 +294,14 @@ export default function DashboardLayout({ toggleTheme, theme }: LayoutProps) {
               >
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-bold leading-none">{userProfile?.nome || 'Carregando...'}</p>
-                  <p className="text-[10px] text-neutral-500 font-medium mt-1 uppercase tracking-wider">{userProfile?.cargo || (userProfile?.role === 'admin' ? 'Administrador' : 'Usuário')}</p>
+                  <p className="text-[10px] text-neutral-500 font-medium mt-1 uppercase tracking-wider">
+                    {userProfile?.cargo || (userProfile?.role === 'admin' ? 'Administrador' : 'Usuário')}
+                    {userProfile?.areas && userProfile.areas.length > 0 && (
+                      <span className="text-blue-500 font-black ml-1">
+                        • {userProfile.areas[0].nome}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
                   {(userProfile?.nome || 'PT').split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}

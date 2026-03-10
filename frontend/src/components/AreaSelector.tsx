@@ -12,18 +12,17 @@ interface AreaSelectorProps {
     selectedValue: number | null;
     onChange: (value: number | null) => void;
     disabled?: boolean;
+    onlyVendedores?: boolean;
 }
 
-export default function AreaSelector({ idCliente, selectedValue, onChange, disabled }: AreaSelectorProps) {
+export default function AreaSelector({ idCliente, selectedValue, onChange, disabled, onlyVendedores = false }: AreaSelectorProps) {
     const { data: areas, isLoading } = useQuery<Area[]>({
-        queryKey: ['areas', idCliente],
+        queryKey: ['areas', idCliente, onlyVendedores],
         queryFn: async () => {
             if (!idCliente) return [];
-            const { data } = await api.get('/area');
-            // Assuming the areas returned by /area might need filtering by client if the API doesn't do it automatically,
-            // but usually /area for a non-admin returns only areas relevant to them.
-            // Let's check how /area is implemented in the backend if needed, 
-            // but for now we follow the pattern of the application.
+            const { data } = await api.get('/area', {
+                params: { idCliente, onlyVendedores }
+            });
             return data;
         },
         enabled: !!idCliente

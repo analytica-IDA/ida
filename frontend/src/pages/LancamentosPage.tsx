@@ -1,8 +1,9 @@
-import { Plus, Trash2, Edit2, TrendingUp, Loader2, X, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Edit2, TrendingUp, Loader2, X, AlertCircle, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import AreaSelector from '../components/AreaSelector';
 
 // Interfaces
 interface Cliente {
@@ -30,6 +31,7 @@ const MODELO_SAUDE = 3;
 export default function LancamentosPage() {
     const [selectedClienteId, setSelectedClienteId] = useState<number>(0);
     const [selectedModeloId, setSelectedModeloId] = useState<number>(0);
+    const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
     const [dataInicial, setDataInicial] = useState<string>('');
     const [dataFinal, setDataFinal] = useState<string>('');
     const [isModalOpen, setModalOpen] = useState(false);
@@ -62,6 +64,13 @@ export default function LancamentosPage() {
         }
     }, [clientes, selectedClienteId]);
 
+    // Automatically select user's area if available
+    useEffect(() => {
+        if (userProfile?.idArea && selectedAreaId === null) {
+            setSelectedAreaId(userProfile.idArea);
+        }
+    }, [userProfile, selectedAreaId]);
+
     // Load selected client models
     const { data: clientModels, isLoading: isLoadingModels } = useQuery<ClienteModeloControle[]>({
         queryKey: ['cliente-modelos', selectedClienteId],
@@ -86,11 +95,12 @@ export default function LancamentosPage() {
 
     // Load lancamentos for the selected client and model
     const { data: lancamentos, isLoading: isLoadingLancamentos } = useQuery<any[]>({
-        queryKey: ['lancamentos', selectedClienteId, selectedModeloId, dataInicial, dataFinal],
+        queryKey: ['lancamentos', selectedClienteId, selectedModeloId, selectedAreaId, dataInicial, dataFinal],
         queryFn: async () => {
             if (!selectedClienteId || !selectedModeloId) return [];
             try {
                 let url = `/lancamento/cliente/${selectedClienteId}?idModeloControle=${selectedModeloId}`;
+                if (selectedAreaId) url += `&idArea=${selectedAreaId}`;
                 if (dataInicial) url += `&dataInicial=${dataInicial}`;
                 if (dataFinal) url += `&dataFinal=${dataFinal}`;
 
@@ -246,23 +256,38 @@ export default function LancamentosPage() {
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-1 ml-1">Data Inicial</label>
-                            <input
-                                type="date"
-                                className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 font-bold outline-none"
-                                value={dataInicial}
-                                onChange={(e) => setDataInicial(e.target.value)}
+                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-1 ml-1">Área</label>
+                            <AreaSelector
+                                idCliente={selectedClienteId}
+                                selectedValue={selectedAreaId}
+                                onChange={setSelectedAreaId}
+                                onlyVendedores={true}
                             />
                         </div>
 
-                        <div className="flex flex-col">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-1 ml-1">Data Final</label>
-                            <input
-                                type="date"
-                                className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 font-bold outline-none"
-                                value={dataFinal}
-                                onChange={(e) => setDataFinal(e.target.value)}
-                            />
+                        <div className="flex items-center gap-3 bg-neutral-50 dark:bg-neutral-800 px-4 py-2 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                            <Calendar size={18} className="text-blue-500 flex-shrink-0" />
+                            <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Desde</span>
+                                    <input
+                                        type="date"
+                                        value={dataInicial}
+                                        onChange={(e) => setDataInicial(e.target.value)}
+                                        className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                    />
+                                </div>
+                                <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-800 self-end mb-1" />
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Até</span>
+                                    <input
+                                        type="date"
+                                        value={dataFinal}
+                                        onChange={(e) => setDataFinal(e.target.value)}
+                                        className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -400,9 +425,13 @@ function LancamentoModal({ onClose, idCliente, idModeloControle, onSuccess, item
                 });
             } else {
                 try {
+                    // Get user info to use their IdArea
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    const idArea = user.idArea;
+
                     const [metaRes, googleRes] = await Promise.all([
-                        api.get(`/ClienteInvestimentoMeta/cliente/${idCliente}`),
-                        api.get(`/ClienteInvestimentoGoogle/cliente/${idCliente}`)
+                        api.get(`/ClienteInvestimentoMeta/cliente/${idCliente}`, { params: { idArea } }),
+                        api.get(`/ClienteInvestimentoGoogle/cliente/${idCliente}`, { params: { idArea } })
                     ]);
                     setFormData({
                         dataLancamento: new Date().toISOString().split('T')[0],

@@ -34,10 +34,12 @@ namespace backend.Controllers
         // --- GET Endpoints ---
         
         [HttpGet("cliente/{idCliente}")]
-        public async Task<IActionResult> GetByCliente(long idCliente, [FromQuery] long? idModeloControle, [FromQuery] DateTime? dataInicial, [FromQuery] DateTime? dataFinal)
+        public async Task<IActionResult> GetByCliente(long idCliente, [FromQuery] long? idModeloControle, [FromQuery] long? idArea, [FromQuery] DateTime? dataInicial, [FromQuery] DateTime? dataFinal)
         {
-            var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
-            bool isAdmin = (roleId == 1); // Role 1 is Admin in the DB seed
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var currentUserId = GetCurrentUserId();
+            long roleId = 0;
+            long.TryParse(roleIdClaim, out roleId);
 
             // Verify if client has this modelo
             var hasModel = await _context.ClientesModelosControles
@@ -45,63 +47,71 @@ namespace backend.Controllers
 
             if (!hasModel) return BadRequest(new { message = "Cliente não possui o modelo de controle informado." });
 
-            // Base query for users
-            List<long> userIds = new List<long>();
-            
-            if (isAdmin)
-            {
-                // Admin sees ALL users linked to this specific client
-                userIds = await _context.ClientesUsuarios
-                    .Where(cu => cu.IdCliente == idCliente)
-                    .Select(cu => cu.IdUsuario)
-                    .Distinct()
-                    .ToListAsync();
-            }
-            else
-            {
-                // Normal user sees users filtered conceptually by hierarchy. For now, matching existing logic (users on this client)
-                userIds = await _context.ClientesUsuarios
-                    .Where(cu => cu.IdCliente == idCliente)
-                    .Select(cu => cu.IdUsuario)
-                    .Distinct()
-                    .ToListAsync();
-            }
-
-            // We need to return specific type based on modelo
+            // Base query logic
             if (idModeloControle == 1) // Cadastro
             {
                 var query = _context.LancamentosCadastro
-                    .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
+                    .Include(l => l.Usuario!.Pessoa)
+                    .Include(l => l.ClienteInvestimentoMeta)
+                    .Include(l => l.ClienteInvestimentoGoogle)
+                    .Where(l => l.Usuario!.Pessoa!.IdCliente == idCliente)
                     .AsQueryable();
-                    
+
+                if (roleId == 4) query = query.Where(l => l.IdUsuario == currentUserId);
+                if (idArea.HasValue && idArea > 0)
+                {
+                    query = query.Where(l => 
+                        (l.ClienteInvestimentoMeta != null && l.ClienteInvestimentoMeta.IdArea == idArea.Value) || 
+                        (l.ClienteInvestimentoGoogle != null && l.ClienteInvestimentoGoogle.IdArea == idArea.Value) ||
+                        (l.IdUsuario == currentUserId && roleId == 4) // For salesperson, show his own if no area yet
+                    );
+                }
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
                 if (dataFinal.HasValue) query = query.Where(l => l.DataLancamento <= dataFinal.Value.AddDays(1).AddTicks(-1));
-                
                 return Ok(await query.OrderByDescending(l => l.DataLancamento).ToListAsync());
             }
             else if (idModeloControle == 2) // Varejo
             {
                 var query = _context.LancamentosVarejo
-                    .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
+                    .Include(l => l.Usuario!.Pessoa)
+                    .Include(l => l.ClienteInvestimentoMeta)
+                    .Include(l => l.ClienteInvestimentoGoogle)
+                    .Where(l => l.Usuario!.Pessoa!.IdCliente == idCliente)
                     .AsQueryable();
-                    
+
+                if (roleId == 4) query = query.Where(l => l.IdUsuario == currentUserId);
+                if (idArea.HasValue && idArea > 0)
+                {
+                    query = query.Where(l => 
+                        (l.ClienteInvestimentoMeta != null && l.ClienteInvestimentoMeta.IdArea == idArea.Value) || 
+                        (l.ClienteInvestimentoGoogle != null && l.ClienteInvestimentoGoogle.IdArea == idArea.Value) ||
+                        (l.IdUsuario == currentUserId && roleId == 4)
+                    );
+                }
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
                 if (dataFinal.HasValue) query = query.Where(l => l.DataLancamento <= dataFinal.Value.AddDays(1).AddTicks(-1));
-                
                 return Ok(await query.OrderByDescending(l => l.DataLancamento).ToListAsync());
             }
             else if (idModeloControle == 3) // Saude
             {
                 var query = _context.LancamentosSaude
-                    .Where(l => userIds.Contains(l.IdUsuario))
-                    .Include(l => l.Usuario!).ThenInclude(u => u!.Pessoa)
+                    .Include(l => l.Usuario!.Pessoa)
+                    .Include(l => l.ClienteInvestimentoMeta)
+                    .Include(l => l.ClienteInvestimentoGoogle)
+                    .Where(l => l.Usuario!.Pessoa!.IdCliente == idCliente)
                     .AsQueryable();
-                    
+
+                if (roleId == 4) query = query.Where(l => l.IdUsuario == currentUserId);
+                if (idArea.HasValue && idArea > 0)
+                {
+                    query = query.Where(l => 
+                        (l.ClienteInvestimentoMeta != null && l.ClienteInvestimentoMeta.IdArea == idArea.Value) || 
+                        (l.ClienteInvestimentoGoogle != null && l.ClienteInvestimentoGoogle.IdArea == idArea.Value) ||
+                        (l.IdUsuario == currentUserId && roleId == 4)
+                    );
+                }
                 if (dataInicial.HasValue) query = query.Where(l => l.DataLancamento >= dataInicial.Value);
                 if (dataFinal.HasValue) query = query.Where(l => l.DataLancamento <= dataFinal.Value.AddDays(1).AddTicks(-1));
-
                 return Ok(await query.OrderByDescending(l => l.DataLancamento).ToListAsync());
             }
 

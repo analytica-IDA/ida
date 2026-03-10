@@ -31,17 +31,32 @@ namespace backend.Services
                 DadosNovos = dadosNovos
             };
 
-            await _context.LogsAuditoria.AddAsync(log);
+            _context.LogsAuditoria.Add(log);
+
+            if (acao.ToUpper() == "LOGIN")
+            {
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            await _context.SaveChangesAsync(); // Ensure Log is saved before queries
 
             // Notification Logic
             var originUser = await _context.Usuarios
-                .Include(u => u.Cargo).ThenInclude(c => c!.Role)
-                .Include(u => u.Pessoa)
                 .FirstOrDefaultAsync(u => u.Login == usuario);
 
-            if (originUser?.Cargo?.Role?.Nome?.ToLower() == "vendedor")
+            if (originUser == null) return;
+
+            var cargo = await _context.Cargos
+                .Include(c => c.Role)
+                .FirstOrDefaultAsync(c => c.Id == originUser.IdCargo);
+
+            if (cargo?.Role?.Nome?.ToLower() == "vendedor")
             {
-                var idCliente = originUser.Pessoa?.IdCliente;
+                var idCliente = await _context.Pessoas
+                    .Where(p => p.Id == originUser.Id)
+                    .Select(p => p.IdCliente)
+                    .FirstOrDefaultAsync();
                 
                 var targetUsers = await _context.Usuarios
                     .Include(u => u.Cargo).ThenInclude(c => c!.Role)
@@ -73,7 +88,7 @@ namespace backend.Services
                         Mensagem = $"O vendedor {nomeVendedor} {acaoFormatada} em '{tabela}'.",
                         Tipo = "AtividadeVendedor"
                     };
-                    await _context.Notificacoes.AddAsync(notificacao);
+                    _context.Notificacoes.Add(notificacao);
                 }
             }
 

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
+import AreaSelector from '../components/AreaSelector';
 
 interface Cliente {
     id: number;
@@ -12,6 +13,7 @@ interface Cliente {
 interface Investimento {
     id: number;
     idCliente: number;
+    idArea: number | null;
     vlrInvestimentoMeta: number;
     vlrInvestimentoGoogle: number;
     dtUltimaAtualizacao: string;
@@ -19,6 +21,7 @@ interface Investimento {
 
 export default function InvestimentosPage() {
     const [selectedClienteId, setSelectedClienteId] = useState<number>(0);
+    const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
     const [isMetaModalOpen, setMetaModalOpen] = useState(false);
     const [isGoogleModalOpen, setGoogleModalOpen] = useState(false);
     const [editingMeta, setEditingMeta] = useState<Investimento | null>(null);
@@ -34,20 +37,24 @@ export default function InvestimentosPage() {
     });
 
     const { data: investimentoMeta, isLoading: isLoadingMeta } = useQuery<Investimento | null>({
-        queryKey: ['investimento-meta', selectedClienteId],
+        queryKey: ['investimento-meta', selectedClienteId, selectedAreaId],
         queryFn: async () => {
             if (!selectedClienteId) return null;
-            const { data } = await api.get(`/ClienteInvestimentoMeta/cliente/${selectedClienteId}`);
+            const { data } = await api.get(`/ClienteInvestimentoMeta/cliente/${selectedClienteId}`, {
+                params: { idArea: selectedAreaId }
+            });
             return data || null;
         },
         enabled: !!selectedClienteId,
     });
 
     const { data: investimentoGoogle, isLoading: isLoadingGoogle } = useQuery<Investimento | null>({
-        queryKey: ['investimento-google', selectedClienteId],
+        queryKey: ['investimento-google', selectedClienteId, selectedAreaId],
         queryFn: async () => {
             if (!selectedClienteId) return null;
-            const { data } = await api.get(`/ClienteInvestimentoGoogle/cliente/${selectedClienteId}`);
+            const { data } = await api.get(`/ClienteInvestimentoGoogle/cliente/${selectedClienteId}`, {
+                params: { idArea: selectedAreaId }
+            });
             return data || null;
         },
         enabled: !!selectedClienteId,
@@ -59,7 +66,7 @@ export default function InvestimentosPage() {
             return api.post('/ClienteInvestimentoMeta', data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['investimento-meta', selectedClienteId] });
+            queryClient.invalidateQueries({ queryKey: ['investimento-meta', selectedClienteId, selectedAreaId] });
             setMetaModalOpen(false);
             setEditingMeta(null);
         }
@@ -71,7 +78,7 @@ export default function InvestimentosPage() {
             return api.post('/ClienteInvestimentoGoogle', data);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['investimento-google', selectedClienteId] });
+            queryClient.invalidateQueries({ queryKey: ['investimento-google', selectedClienteId, selectedAreaId] });
             setGoogleModalOpen(false);
             setEditingGoogle(null);
         }
@@ -82,23 +89,36 @@ export default function InvestimentosPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">Gerenciamento de Investimentos</h1>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-1">Defina as metas de investimento por cliente.</p>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1">Defina as metas de investimento real por cliente.</p>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                <div className="flex flex-col max-w-sm">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col w-full max-w-sm">
                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-1 ml-1">Cliente</label>
                     <select
                         className="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 font-bold outline-none"
                         value={selectedClienteId}
-                        onChange={(e) => setSelectedClienteId(Number(e.target.value))}
+                        onChange={(e) => {
+                            setSelectedClienteId(Number(e.target.value));
+                            setSelectedAreaId(null);
+                        }}
                     >
                         <option value={0}>Selecione um cliente</option>
                         {clientes?.map(c => (
                             <option key={c.id} value={c.id}>{c.nome}</option>
                         ))}
                     </select>
+                </div>
+
+                <div className="flex flex-col w-full max-w-sm">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-1 ml-1">Área</label>
+                    <AreaSelector
+                        idCliente={selectedClienteId > 0 ? selectedClienteId : null}
+                        selectedValue={selectedAreaId}
+                        onChange={setSelectedAreaId}
+                        onlyVendedores={true}
+                    />
                 </div>
             </div>
 
@@ -195,6 +215,7 @@ export default function InvestimentosPage() {
                         field="vlrInvestimentoMeta"
                         item={editingMeta}
                         idCliente={selectedClienteId}
+                        idArea={selectedAreaId}
                         onClose={() => setMetaModalOpen(false)}
                         onSave={(data) => saveMetaMutation.mutate(data)}
                         isPending={saveMetaMutation.isPending}
@@ -206,6 +227,7 @@ export default function InvestimentosPage() {
                         field="vlrInvestimentoGoogle"
                         item={editingGoogle}
                         idCliente={selectedClienteId}
+                        idArea={selectedAreaId}
                         onClose={() => setGoogleModalOpen(false)}
                         onSave={(data) => saveGoogleMutation.mutate(data)}
                         isPending={saveGoogleMutation.isPending}
@@ -221,12 +243,13 @@ interface InvestmentModalProps {
     field: keyof Investimento;
     item: Investimento | null;
     idCliente: number;
+    idArea: number | null;
     onClose: () => void;
     onSave: (data: Partial<Investimento>) => void;
     isPending: boolean;
 }
 
-function InvestmentModal({ title, field, item, idCliente, onClose, onSave, isPending }: InvestmentModalProps) {
+function InvestmentModal({ title, field, item, idCliente, idArea, onClose, onSave, isPending }: InvestmentModalProps) {
     const [value, setValue] = useState(item ? (item[field] as number).toString().replace('.', ',') : '0,00');
 
     return (
@@ -261,7 +284,7 @@ function InvestmentModal({ title, field, item, idCliente, onClose, onSave, isPen
                             disabled={isPending}
                             onClick={() => {
                                 const numValue = Number(value.replace(',', '.'));
-                                onSave({ ...item, idCliente, [field]: numValue });
+                                onSave({ ...item, idCliente, idArea, [field]: numValue });
                             }}
                             className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                         >

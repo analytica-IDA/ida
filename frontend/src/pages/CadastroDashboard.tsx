@@ -1,4 +1,4 @@
-import { FileText, TrendingUp, Wallet, Loader2, Info, MousePointer2, UserCheck, DollarSign } from 'lucide-react';
+import { FileText, TrendingUp, Wallet, Loader2, Info, MousePointer2, UserCheck, DollarSign, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
@@ -47,10 +47,12 @@ export default function CadastroDashboard() {
         return user.role !== 'admin' ? user.idCliente : null;
     });
     const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
 
     const { data: stats, isLoading } = useQuery<CadastroStats>({
-        queryKey: ['cadastro-stats', selectedClienteId, selectedAreaId],
-        queryFn: async () => (await api.get('/dashboard/cadastro', { params: { idCliente: selectedClienteId, idArea: selectedAreaId } })).data
+        queryKey: ['cadastro-stats', selectedClienteId, selectedAreaId, startDate, endDate],
+        queryFn: async () => (await api.get('/dashboard/cadastro', { params: { idCliente: selectedClienteId, idArea: selectedAreaId, dataInicial: startDate, dataFinal: endDate } })).data
     });
 
     const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
@@ -79,10 +81,35 @@ export default function CadastroDashboard() {
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex items-center gap-3 bg-white dark:bg-neutral-900 px-4 py-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm focus-within:ring-2 focus-within:ring-amber-500/20 transition-all">
+                        <Calendar size={18} className="text-amber-500 flex-shrink-0" />
+                        <div className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Desde</span>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                />
+                            </div>
+                            <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-800 self-end mb-1" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Até</span>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <AreaSelector
                         idCliente={selectedClienteId}
                         selectedValue={selectedAreaId}
                         onChange={setSelectedAreaId}
+                        onlyVendedores={true}
                     />
                     <ClientSelector
                         clientes={clientes}

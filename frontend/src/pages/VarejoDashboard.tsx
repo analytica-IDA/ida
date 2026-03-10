@@ -1,4 +1,4 @@
-import { Store, TrendingUp, Users, Wallet, Loader2, Instagram, Facebook, Search, Award } from 'lucide-react';
+import { Store, TrendingUp, Users, Wallet, Loader2, Instagram, Facebook, Search, Award, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
@@ -6,6 +6,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ClientSelector from '../components/ClientSelector';
 import AreaSelector from '../components/AreaSelector';
 import type { Cliente } from '../components/ClientSelector';
+
+interface BreakdownItem {
+    name: string;
+    faturamento: number;
+    atendimento: number;
+    fechamento: number;
+    conversao: number;
+    investimento?: number;
+    investimentoMeta?: number;
+    investimentoGoogle?: number;
+    roas?: number;
+    instagram?: number;
+    facebook?: number;
+    google?: number;
+    indicacao?: number;
+    area?: string;
+}
 
 interface VarejoStats {
     totalFaturamento: number;
@@ -19,6 +36,8 @@ interface VarejoStats {
     totalIndicacao: number;
     totalInvestimentoMeta: number;
     totalInvestimentoGoogle: number;
+    areaBreakdown: BreakdownItem[];
+    sellerBreakdown: BreakdownItem[];
 }
 
 function Tooltip({ text, children, className = "inline-block" }: { text: string, children: React.ReactNode, className?: string }) {
@@ -51,10 +70,19 @@ export default function VarejoDashboard() {
         return user.role !== 'admin' ? user.idCliente : null;
     });
     const [selectedAreaId, setSelectedAreaId] = useState<number | null>(null);
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
 
     const { data: stats, isLoading } = useQuery<VarejoStats>({
-        queryKey: ['varejo-stats', selectedClienteId, selectedAreaId],
-        queryFn: async () => (await api.get('/dashboard/varejo', { params: { idCliente: selectedClienteId, idArea: selectedAreaId } })).data
+        queryKey: ['varejo-stats', selectedClienteId, selectedAreaId, startDate, endDate],
+        queryFn: async () => (await api.get('/dashboard/varejo', {
+            params: {
+                idCliente: selectedClienteId,
+                idArea: selectedAreaId,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined
+            }
+        })).data
     });
 
     const { data: clientes, isLoading: isLoadingClientes } = useQuery<Cliente[]>({
@@ -83,10 +111,35 @@ export default function VarejoDashboard() {
                     </div>
                 </div>
                 <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex items-center gap-3 bg-white dark:bg-neutral-900 px-4 py-2 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                        <Calendar size={18} className="text-blue-500 flex-shrink-0" />
+                        <div className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Desde</span>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                />
+                            </div>
+                            <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-800 self-end mb-1" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black uppercase text-neutral-400 leading-none mb-1">Até</span>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="bg-transparent border-none p-0 text-sm font-bold focus:ring-0 text-neutral-700 dark:text-neutral-200 cursor-pointer w-[125px]"
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <AreaSelector
                         idCliente={selectedClienteId}
                         selectedValue={selectedAreaId}
                         onChange={setSelectedAreaId}
+                        onlyVendedores={true}
                     />
                     <ClientSelector
                         clientes={clientes}
@@ -101,6 +154,48 @@ export default function VarejoDashboard() {
                 </div>
             </div>
 
+            {!selectedAreaId ? (
+                <div className="space-y-12">
+
+                    {stats?.areaBreakdown.map((area, idx) => (
+                        <div key={idx} className="bg-white dark:bg-neutral-900/40 p-8 rounded-[3rem] border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                            <h2 className="text-xl font-black uppercase tracking-tight mb-8 flex items-center gap-3">
+                                <div className="h-1 w-8 bg-emerald-500 rounded-full" />
+                                {area.name}
+                            </h2>
+                            <AreaStatsSection
+                                stats={{
+                                    totalFaturamento: area.faturamento,
+                                    roas: area.roas || 0,
+                                    conversionRate: area.conversao,
+                                    totalInvestimento: area.investimento || 0,
+                                    totalInstagram: area.instagram || 0,
+                                    totalAtendimento: area.atendimento,
+                                    totalFacebook: area.facebook || 0,
+                                    totalGoogle: area.google || 0,
+                                    totalIndicacao: area.indicacao || 0,
+                                    totalInvestimentoMeta: area.investimentoMeta || 0,
+                                    totalInvestimentoGoogle: area.investimentoGoogle || 0,
+                                } as any}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <AreaStatsSection stats={stats as any} />
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <BreakdownTable title="Desempenho por Área" data={stats?.areaBreakdown || []} />
+                <BreakdownTable title="Desempenho por Vendedor" data={stats?.sellerBreakdown || []} />
+            </div>
+        </div>
+    );
+}
+
+function AreaStatsSection({ stats }: { stats: VarejoStats }) {
+    return (
+        <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Faturamento Total" value={`R$ ${stats?.totalFaturamento?.toLocaleString() || '0'}`} icon={<Wallet size={24} />} color="blue" hint="Soma de todos os faturamentos registrados no período." />
                 <StatCard title="ROAS" value={`${stats?.roas?.toFixed(2) || '0.00'}x`} icon={<TrendingUp size={24} />} color="emerald" hint="Retorno sobre investimento (Faturamento / Investimento Total)." />
@@ -156,6 +251,58 @@ export default function VarejoDashboard() {
                         <p className="text-xl font-bold">R$ {stats?.totalInvestimento?.toLocaleString()}</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function BreakdownTable({ title, data }: { title: string, data: BreakdownItem[] }) {
+    return (
+        <div className="bg-white dark:bg-neutral-900 p-8 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <h3 className="font-bold text-lg uppercase tracking-tight mb-8">{title}</h3>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left bg-transparent">
+                    <thead>
+                        <tr className="border-b border-neutral-100 dark:border-neutral-800">
+                            <th className="pb-4 text-[10px] font-black uppercase text-neutral-400">Nome</th>
+                            <th className="pb-4 text-[10px] font-black uppercase text-neutral-400 text-right">Fat.</th>
+                            <th className="pb-4 text-[10px] font-black uppercase text-neutral-400 text-right">Atend.</th>
+                            <th className="pb-4 text-[10px] font-black uppercase text-neutral-400 text-right">Fech.</th>
+                            <th className="pb-4 text-[10px] font-black uppercase text-neutral-400 text-right">Conv.</th>
+                            {data.some(d => d.roas !== undefined) && <th className="pb-4 text-[10px] font-black uppercase text-neutral-400 text-right">ROAS</th>}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-50 dark:divide-neutral-800/50">
+                        {data.map((item, idx) => (
+                            <tr key={idx} className="group hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                                <td className="py-4 font-bold text-sm text-neutral-900 dark:text-white">
+                                    {item.name}
+                                    {item.area && <span className="block text-[10px] font-medium text-neutral-400 uppercase tracking-wider">{item.area}</span>}
+                                </td>
+                                <td className="py-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 text-right">R$ {item.faturamento.toLocaleString()}</td>
+                                <td className="py-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 text-right">{item.atendimento}</td>
+                                <td className="py-4 text-sm font-medium text-neutral-700 dark:text-neutral-300 text-right">{item.fechamento}</td>
+                                <td className="py-4 text-right">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${(item.conversao * 100) > 20 ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}>
+                                        {(item.conversao * 100).toFixed(1)}%
+                                    </span>
+                                </td>
+                                {item.roas !== undefined && (
+                                    <td className="py-4 text-right">
+                                        <span className={`font-black text-sm ${item.roas > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-400'}`}>
+                                            {item.roas.toFixed(2)}x
+                                        </span>
+                                    </td>
+                                )}
+                            </tr>
+                        ))}
+                        {data.length === 0 && (
+                            <tr>
+                                <td colSpan={5} className="py-8 text-center text-sm text-neutral-400 font-medium italic">Nenhum dado disponível.</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

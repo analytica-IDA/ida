@@ -20,10 +20,12 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] long? idCliente, [FromQuery] bool onlyVendedores = false)
         {
             var roleId = long.Parse(User.FindFirst("roleId")?.Value ?? "0");
-            var idCliente = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+            var claimClientId = long.Parse(User.FindFirst("idCliente")?.Value ?? "0");
+
+            if (roleId != 1) idCliente = claimClientId;
 
             var query = _context.Areas
                 .Include(a => a.CargosAreas)
@@ -35,22 +37,39 @@ namespace backend.Controllers
                         .ThenInclude(c => c!.Role)
                 .AsQueryable();
 
-            if (roleId != 1) 
+            if (idCliente.HasValue && idCliente > 0)
             {
-                query = query.Where(a => a.CargosAreas.Any(ca => ca.Cargo != null && ca.Cargo.ClientesCargos.Any(cc => cc.IdCliente == idCliente)));
+                // Get area IDs linked to this client via Cargo -> ClienteCargo
+                var areasFromCargo = _context.CargosAreas
+                    .Where(ca => ca.Cargo!.ClientesCargos.Any(cc => cc.IdCliente == idCliente.Value));
+
+                if (onlyVendedores)
+                {
+                    // Filter those areas to only include those where the cargo has a vendedor role
+                    areasFromCargo = areasFromCargo.Where(ca => ca.Cargo!.IdRole == 4);
+                }
+
+                var areasFromCargoIds = await areasFromCargo.Select(ca => ca.IdArea).ToListAsync();
+
+                // Get area IDs linked directly via ClienteUsuario
+                var cuQuery = _context.ClientesUsuarios
+                    .Where(cu => cu.IdCliente == idCliente.Value && cu.IdArea > 0);
                 
-                if (roleId == 2) // Proprietário
+                if (onlyVendedores)
                 {
-                    query = query.Where(a => a.CargosAreas.Any(ca => ca.Cargo != null && (ca.Cargo.Role!.Nome == "supervisor" || ca.Cargo.Role!.Nome == "Supervisor" || ca.Cargo.Role!.Nome == "vendedor" || ca.Cargo.Role!.Nome == "Vendedor")));
+                    cuQuery = cuQuery.Where(cu => cu.Usuario!.Cargo!.IdRole == 4);
                 }
-                else if (roleId == 3) // Supervisor
-                {
-                    query = query.Where(a => a.CargosAreas.Any(ca => ca.Cargo != null && (ca.Cargo.Role!.Nome == "vendedor" || ca.Cargo.Role!.Nome == "Vendedor")));
-                }
-                else 
-                {
-                    query = query.Where(a => false); // Outras roles não veem áreas
-                }
+
+                var areasFromCUIds = await cuQuery.Select(cu => cu.IdArea).ToListAsync();
+
+                var allAreaIds = areasFromCargoIds.Concat(areasFromCUIds).Distinct().ToList();
+                
+                query = query.Where(a => allAreaIds.Contains(a.Id));
+            }
+            else if (roleId != 1) 
+            {
+                // Fallback for non-admin without explicit idCliente (should not happen with the idCliente = claimClientId assignment)
+                query = query.Where(a => a.CargosAreas.Any(ca => ca.Cargo != null && ca.Cargo.ClientesCargos.Any(cc => cc.IdCliente == claimClientId)));
             }
 
             var dbAreas = await query.ToListAsync();

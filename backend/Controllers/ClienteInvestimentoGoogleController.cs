@@ -35,10 +35,17 @@ namespace backend.Controllers
         }
 
         [HttpGet("cliente/{idCliente}")]
-        public async Task<IActionResult> GetByCliente(long idCliente)
+        public async Task<IActionResult> GetByCliente(long idCliente, [FromQuery] long? idArea)
         {
-            var invest = await _context.ClientesInvestimentosGoogle
-                .Where(c => c.IdCliente == idCliente)
+            var query = _context.ClientesInvestimentosGoogle
+                .Where(c => c.IdCliente == idCliente);
+
+            if (idArea.HasValue)
+            {
+                query = query.Where(c => c.IdArea == idArea.Value);
+            }
+
+            var invest = await query
                 .OrderByDescending(c => c.DtUltimaAtualizacao)
                 .FirstOrDefaultAsync();
 

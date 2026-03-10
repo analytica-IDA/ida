@@ -1,7 +1,6 @@
 using backend.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,12 +12,10 @@ namespace backend.Tests
     {
         protected readonly HttpClient _client;
         protected readonly WebApplicationFactory<Program> _factory;
-        private readonly SqliteConnection _connection;
 
         public IntegrationTestBase()
         {
-            _connection = new SqliteConnection("DataSource=:memory:");
-            _connection.Open();
+            var dbName = Guid.NewGuid().ToString();
 
             _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
@@ -28,10 +25,10 @@ namespace backend.Tests
                     // Remove existing DbContext
                     services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
 
-                    // Add SQLite for testing
+                    // Add InMemory for testing
                     services.AddDbContext<AppDbContext>(options =>
                     {
-                        options.UseSqlite(_connection);
+                        options.UseInMemoryDatabase(dbName);
                     });
 
                     // Add a policy that always succeeds for tests
@@ -47,7 +44,6 @@ namespace backend.Tests
                     using (var scope = sp.CreateScope())
                     {
                         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                        db.Database.EnsureDeleted();
                         db.Database.EnsureCreated();
                     }
                 });
@@ -60,8 +56,6 @@ namespace backend.Tests
         {
             _client.Dispose();
             _factory.Dispose();
-            _connection.Close();
-            _connection.Dispose();
         }
     }
 }
