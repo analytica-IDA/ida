@@ -69,7 +69,7 @@ export default function CadastroDashboard() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-8 animate-in fade-in duration-1000">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="p-4 bg-amber-600 rounded-3xl text-white shadow-lg shadow-amber-500/20">
@@ -136,13 +136,13 @@ export default function CadastroDashboard() {
                     <h3 className="font-bold text-lg uppercase tracking-tight mb-8">Cliques vs Cadastros</h3>
                     <div className="flex h-64 items-end gap-12 px-8 pb-4">
                         <div className="flex-1 flex flex-col items-center gap-4">
-                            <motion.div initial={{ height: 0 }} animate={{ height: '100%' }} className="w-24 bg-blue-500/20 border-x border-t border-blue-500/50 rounded-t-3xl relative">
+                            <motion.div initial={{ height: 0 }} animate={{ height: '100%' }} transition={{ duration: 2, ease: "easeOut" }} className="w-24 bg-blue-500/20 border-x border-t border-blue-500/50 rounded-t-3xl relative">
                                 <span className="absolute -top-8 w-full text-center font-black text-blue-600">{stats?.totalClickLink || 0}</span>
                             </motion.div>
                             <span className="text-[10px] font-black uppercase text-neutral-400">Cliques</span>
                         </div>
                         <div className="flex-1 flex flex-col items-center gap-4">
-                            <motion.div initial={{ height: 0 }} animate={{ height: stats?.totalClickLink && stats.totalClickLink > 0 ? `${((stats.totalCadastros || 0) / stats.totalClickLink) * 100}%` : '0%' }} className="w-24 bg-amber-500 border-x border-t border-amber-600 rounded-t-3xl relative shadow-lg shadow-amber-500/20">
+                            <motion.div initial={{ height: 0 }} animate={{ height: stats?.totalClickLink && stats.totalClickLink > 0 ? `${((stats.totalCadastros || 0) / stats.totalClickLink) * 100}%` : '0%' }} transition={{ duration: 2, ease: "easeOut" }} className="w-24 bg-amber-500 border-x border-t border-amber-600 rounded-t-3xl relative shadow-lg shadow-amber-500/20">
                                 <span className="absolute -top-8 w-full text-center font-black text-amber-600">{stats?.totalCadastros || 0}</span>
                             </motion.div>
                             <span className="text-[10px] font-black uppercase text-neutral-400">Cadastros</span>

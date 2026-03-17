@@ -99,7 +99,7 @@ export default function VarejoDashboard() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-8 animate-in fade-in duration-1000">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="p-4 bg-blue-600 rounded-3xl text-white shadow-lg shadow-blue-500/20">
@@ -230,6 +230,7 @@ function AreaStatsSection({ stats }: { stats: VarejoStats }) {
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: (stats?.totalInvestimento ?? 0) > 0 ? `${((stats?.totalInvestimentoMeta ?? 0) / (stats?.totalInvestimento ?? 1)) * 100}%` : '0%' }}
+                                    transition={{ duration: 2, ease: "easeOut" }}
                                     className="h-full bg-blue-500 rounded-full"
                                 />
                             </div>
@@ -241,6 +242,7 @@ function AreaStatsSection({ stats }: { stats: VarejoStats }) {
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: (stats?.totalInvestimento ?? 0) > 0 ? `${((stats?.totalInvestimentoGoogle ?? 0) / (stats?.totalInvestimento ?? 1)) * 100}%` : '0%' }}
+                                    transition={{ duration: 2, ease: "easeOut" }}
                                     className="h-full bg-red-500 rounded-full"
                                 />
                             </div>
@@ -368,7 +370,7 @@ function ChannelRow({ label, value, total, icon, color }: ChannelRowProps) {
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${percentage}%` }}
-                    transition={{ duration: 1 }}
+                    transition={{ duration: 2, ease: "easeOut" }}
                     className={`h-full rounded-full ${color}`}
                 />
             </div>

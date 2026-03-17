@@ -52,7 +52,7 @@ export default function DashboardHub() {
     }
 
     return (
-        <div className="space-y-10 animate-in fade-in duration-700">
+        <div className="space-y-10 animate-in fade-in duration-1000">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black tracking-tight text-neutral-900 dark:text-white uppercase">
                     Hub de Modelos de Controle
@@ -155,7 +155,7 @@ export default function DashboardHub() {
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: '75%' }}
-                                        transition={{ duration: 1, delay: 0.5 }}
+                                        transition={{ duration: 2, delay: 0.5 }}
                                         className="h-full bg-blue-600 rounded-full"
                                     />
                                 </div>
